@@ -1,16 +1,12 @@
 'use client';
 
-import React, { useEffect, useMemo, useState, Suspense } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Recycle, AlertCircle, CheckCircle2, KeyRound, LogIn } from 'lucide-react';
 import { createBrowserClient } from '@supabase/ssr';
 import { RoleLoginPortalView } from '@/components/RoleLoginPortalView';
 import { fetchPlatformSnapshotClient } from '@/lib/client/platform-bridge';
 import { UserProfile } from '@/types/domain';
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const AUTH_ENABLED = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
 function LoginContent() {
   const router = useRouter();
@@ -24,10 +20,33 @@ function LoginContent() {
   const [message, setMessage] = useState<{ kind: 'error' | 'info' | 'success'; text: string } | null>(null);
   const [mode, setMode] = useState<'signin' | 'forgot'>('signin');
 
-  const supabase = useMemo(
-    () => (AUTH_ENABLED ? createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null),
-    []
-  );
+  // Resolve Supabase config at runtime — NEXT_PUBLIC_* values are inlined at
+  // build time, which the production Docker build never receives.
+  const [supabase, setSupabase] = useState<any | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch('/api/config')
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+      .then((cfg) => {
+        if (cancelled) return;
+        if (cfg?.supabaseUrl && cfg?.supabaseAnonKey) {
+          setSupabase(createBrowserClient(cfg.supabaseUrl, cfg.supabaseAnonKey));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setAuthChecked(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const AUTH_ENABLED = Boolean(supabase);
 
   useEffect(() => {
     fetchPlatformSnapshotClient().then(setSnapshot);
@@ -100,7 +119,7 @@ function LoginContent() {
     });
   };
 
-  if (!snapshot) {
+  if (!snapshot || !authChecked) {
     return (
       <div className="min-h-screen bg-[#E6F1FA] flex items-center justify-center p-6">
         <div className="hai-card px-6 py-4 flex items-center gap-3 text-[#005FA3] font-semibold text-sm shadow-xs">
