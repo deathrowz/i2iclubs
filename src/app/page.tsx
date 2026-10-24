@@ -551,6 +551,17 @@ export default function PlatformDashboardPage() {
                     </span>
                   </div>
 
+                  {(activeUser.role === 'super_admin' || activeUser.role === 'admin') && (
+                    <a
+                      href="/admin"
+                      className="px-3.5 py-1 rounded-full text-[11px] font-semibold bg-[#005FA3] text-[#9CF2F2] border border-[#005FA3] hover:bg-[#0B3E6E] cursor-pointer flex items-center gap-1.5 transition"
+                      title="Open the platform management console"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <span>Platform Management</span>
+                    </a>
+                  )}
+
                   <button
                     onClick={handleLogout}
                     className="px-3.5 py-1 rounded-full text-[11px] font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 cursor-pointer flex items-center gap-1.5 transition"
