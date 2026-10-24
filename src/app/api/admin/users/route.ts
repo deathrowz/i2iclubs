@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthError, requireAdmin, requireSuperAdmin } from '@/lib/auth/guards';
 import { getPlatformStore, getUserActivitySummaries } from '@/lib/store/platform-store';
+import { ensureClubsHydrated } from '@/lib/store/club-repository';
 import { createServiceSupabase } from '@/lib/supabase/server';
 import { UserProfile, UserRole } from '@/types/domain';
 
@@ -19,6 +20,7 @@ const ASSIGNABLE_ROLES: UserRole[] = [
 export async function GET() {
   try {
     await requireAdmin();
+    await ensureClubsHydrated();
     const store = getPlatformStore();
     const activity = await getUserActivitySummaries();
 

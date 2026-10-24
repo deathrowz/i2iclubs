@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthError, requireSuperAdmin } from '@/lib/auth/guards';
+import { deleteClubRow, saveClub } from '@/lib/store/club-repository';
 import { deleteSchoolClub, updateSchoolClub } from '@/lib/store/platform-store';
 
 export const dynamic = 'force-dynamic';
@@ -17,6 +18,8 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       schoolId: typeof body.schoolId === 'string' ? body.schoolId : undefined,
     });
 
+    await saveClub(club);
+
     return NextResponse.json({ ok: true, club, updatedBy: actor.email });
   } catch (err) {
     const status = err instanceof AuthError ? err.status : 422;
@@ -33,6 +36,7 @@ export async function DELETE(_req: NextRequest, ctx: { params: Promise<{ id: str
     const { id } = await ctx.params;
 
     const result = deleteSchoolClub(id);
+    await deleteClubRow(id);
     return NextResponse.json({ ok: true, ...result, deletedBy: actor.email });
   } catch (err) {
     const status = err instanceof AuthError ? err.status : 422;

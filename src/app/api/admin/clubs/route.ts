@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthError, requireAdmin, requireSuperAdmin } from '@/lib/auth/guards';
+import { ensureClubsHydrated, saveClub } from '@/lib/store/club-repository';
 import {
   createSchoolClub,
   getPlatformStore,
@@ -11,6 +12,7 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     await requireAdmin();
+    await ensureClubsHydrated();
 
     const store = getPlatformStore();
     const activity = await getUserActivitySummaries();
@@ -76,6 +78,8 @@ export async function POST(req: NextRequest) {
       circularSector: body.circularSector ? String(body.circularSector) : undefined,
       actorId: actor.id,
     });
+
+    await saveClub(club);
 
     return NextResponse.json({ ok: true, club, createdBy: actor.email });
   } catch (err) {
