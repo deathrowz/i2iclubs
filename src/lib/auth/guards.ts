@@ -1,6 +1,7 @@
 import { UserProfile, UserRole } from '@/types/domain';
 import { getPlatformStore } from '@/lib/store/platform-store';
 import { createServerSupabase } from '@/lib/supabase/server';
+import { ensureStoreHydrated } from '@/lib/store/club-repository';
 
 export const ADMIN_ROLES: UserRole[] = ['super_admin', 'admin'];
 
@@ -16,6 +17,10 @@ export function isAdminRole(role?: UserRole | null): boolean {
  * are direct.
  */
 export async function getSignedInProfile(): Promise<UserProfile | null> {
+  // Profiles may have been created in a previous process; load them before
+  // matching so a persisted administrator is not locked out after a restart.
+  await ensureStoreHydrated();
+
   const supabase = await createServerSupabase();
   const {
     data: { user },
