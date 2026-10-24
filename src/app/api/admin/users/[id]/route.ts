@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthError, isAdminRole, requireSuperAdmin } from '@/lib/auth/guards';
 import { assignUserToClub, getPlatformStore } from '@/lib/store/platform-store';
-import { saveMembership } from '@/lib/store/club-repository';
+import { deleteUserRow, saveMembership, saveUser } from '@/lib/store/club-repository';
 import { createServiceSupabase } from '@/lib/supabase/server';
 import { UserRole } from '@/types/domain';
 
@@ -93,6 +93,8 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       }
     }
 
+    await saveUser(user);
+
     return NextResponse.json({ ok: true, user, updatedBy: actor.email });
   } catch (err) {
     const status = err instanceof AuthError ? err.status : 500;
@@ -140,6 +142,7 @@ export async function DELETE(_req: NextRequest, ctx: { params: Promise<{ id: str
     }
 
     store.users.splice(index, 1);
+    await deleteUserRow(user.id);
 
     return NextResponse.json({
       ok: true,

@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import { AuthError, requireAdmin } from '@/lib/auth/guards';
 import { getFullPlatformSnapshot } from '@/lib/store/platform-store';
-import { ensureClubsHydrated } from '@/lib/store/club-repository';
+import { ensureStoreHydrated } from '@/lib/store/club-repository';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
     await requireAdmin();
-    await ensureClubsHydrated();
+    await ensureStoreHydrated();
 
     const snapshot = getFullPlatformSnapshot();
     const { users, schools, clubs, impactLogs, auditLogs, healthAlerts } = snapshot;

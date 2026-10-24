@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ensureClubsHydrated } from '@/lib/store/club-repository';
+import { ensureStoreHydrated } from '@/lib/store/club-repository';
 import {
   getFullPlatformSnapshot,
   performExpertAdjudication,
@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   // Reflect clubs persisted in Postgres rather than only the built-in seeds.
-  await ensureClubsHydrated();
+  await ensureStoreHydrated();
   const snapshot = getFullPlatformSnapshot();
   return NextResponse.json(snapshot);
 }

@@ -1,4 +1,4 @@
-import { Club } from '@/types/domain';
+import { Club, UserProfile } from '@/types/domain';
 import { getPlatformStore } from '@/lib/store/platform-store';
 import { getSupabaseServiceClient } from '@/lib/supabase/client';
 
@@ -12,8 +12,10 @@ import { getSupabaseServiceClient } from '@/lib/supabase/client';
  */
 
 let hydrated = false;
+let usersHydrated = false;
 
 const SEED_KEY = 'clubs_seeded';
+const USERS_SEED_KEY = 'users_seeded';
 
 export function isClubStorageEnabled(): boolean {
   return Boolean(getSupabaseServiceClient());
@@ -144,4 +146,94 @@ export async function saveMembership(userId: string, clubId: string | null): Pro
   } catch (err) {
     console.warn('[clubs] membership save threw:', err);
   }
+}
+
+
+/* --------------------------------------------------------------------------
+ * USER PROFILES
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Loads profiles from Postgres, seeding once from the built-in personas.
+ * Also re-applies club membership so a hydrated user carries their club.
+ */
+export async function ensureUsersHydrated(): Promise<void> {
+  if (usersHydrated) return;
+
+  const supabase = getSupabaseServiceClient();
+  if (!supabase) {
+    usersHydrated = true;
+    return;
+  }
+
+  const store = getPlatformStore();
+
+  try {
+    const { data: marker, error: markerError } = await supabase
+      .from('platform_meta')
+      .select('value')
+      .eq('key', USERS_SEED_KEY)
+      .maybeSingle();
+
+    if (markerError) throw markerError;
+
+    if (!marker) {
+      const rows = store.users.map((user) => ({ id: user.id, data: user }));
+      if (rows.length > 0) {
+        const { error: seedError } = await supabase
+          .from('users_store')
+          .upsert(rows, { onConflict: 'id' });
+        if (seedError) throw seedError;
+      }
+      await supabase
+        .from('platform_meta')
+        .upsert({ key: USERS_SEED_KEY, value: new Date().toISOString() }, { onConflict: 'key' });
+    }
+
+    const { data: userRows, error: usersError } = await supabase.from('users_store').select('data');
+    if (usersError) throw usersError;
+    if (Array.isArray(userRows) && userRows.length > 0) {
+      store.users = userRows.map((row: { data: UserProfile }) => row.data);
+    }
+
+    usersHydrated = true;
+  } catch (err) {
+    console.warn('[users] hydration failed, continuing from memory:', err);
+    usersHydrated = true;
+  }
+}
+
+export async function saveUser(user: UserProfile): Promise<void> {
+  const supabase = getSupabaseServiceClient();
+  if (!supabase) return;
+  try {
+    const { error } = await supabase
+      .from('users_store')
+      .upsert({ id: user.id, data: user, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    if (error) console.warn('[users] save failed:', error.message);
+  } catch (err) {
+    console.warn('[users] save threw:', err);
+  }
+}
+
+export async function deleteUserRow(userId: string): Promise<void> {
+  const supabase = getSupabaseServiceClient();
+  if (!supabase) return;
+  try {
+    await supabase.from('club_members').delete().eq('user_id', userId);
+    const { error } = await supabase.from('users_store').delete().eq('id', userId);
+    if (error) console.warn('[users] delete failed:', error.message);
+  } catch (err) {
+    console.warn('[users] delete threw:', err);
+  }
+}
+
+/** Hydrates every durable slice of the platform store. */
+export async function ensureStoreHydrated(): Promise<void> {
+  await ensureClubsHydrated();
+  await ensureUsersHydrated();
+}
+
+export function invalidateUserCache(): void {
+  usersHydrated = false;
 }
