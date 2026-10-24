@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
+import { ActivityHeartbeat } from '@/components/ActivityHeartbeat';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -29,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${plusJakarta.variable}`}>
       <body className="min-h-screen bg-[#E6F1FA] text-[#111010] antialiased selection:bg-[#9CF2F2] selection:text-[#005FA3]">
+        <ActivityHeartbeat />
         {children}
       </body>
     </html>
