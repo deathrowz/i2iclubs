@@ -280,3 +280,20 @@ body {
   animation: node_pulse_ring 2.2s infinite;
 }
 
+/* ============================================================================
+ * Motion accessibility: neutralize decorative gamification animations
+ * for users who prefer reduced motion (WCAG 2.3.3).
+ * ============================================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-spin-slow,
+  .animate-pulse-subtle,
+  .animate-badge-shine,
+  .animate-energy-sweep,
+  .animate-laser-scanlines,
+  .animate-spark-flare,
+  .animate-node-pulse {
+    animation: none;
+  }
+}
+
