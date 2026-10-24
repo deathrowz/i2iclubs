@@ -171,11 +171,9 @@ export function WhatsAppCloudWorkbench({
       id: 'init-1',
       sender: 'bot',
       text:
-        `Ayubowan / Vanakkam! 🌿 Welcome to the *I2I Clubs (Idea2Impact)* WhatsApp Cloud Ingestion Gateway.\n\n` +
-        `📱 Connected Account: *${selectedClub.name} • ${selectedSchool.name}*\n` +
-        `🇪🇺 Compliance: OCI self-hosted (161.118.247.101) • Colocated Supabase\n` +
-        `🔒 Security: Meta Graph API v20.0 • SHA-256 HMAC & E.164 Identity Resolution Active.\n\n` +
-        `Choose an action below to simulate student photo submissions, teacher invoice endorsements, or expert scoring!`,
+        `Ayubowan / Vanakkam! 🌿 Welcome to *I2I Clubs (Idea2Impact)*.\n\n` +
+        `📱 Connected club: *${selectedClub.name} • ${selectedSchool.name}*\n\n` +
+        `Choose an action below to log a student activity, endorse a receipt as a teacher, or score a submission as an expert.`,
       timestamp: '09:30 AM',
       badge: 'WhatsApp Cloud API Active',
       statusIcon: 'double_blue_tick',
@@ -316,15 +314,15 @@ export function WhatsAppCloudWorkbench({
                   {isTeacher
                     ? 'Teacher Activity & Receipt Approval'
                     : isExpert
-                    ? 'Expert Invoices & Scoring Dossiers'
+                    ? 'Expert Reviews & Scoring'
                     : 'WhatsApp Activity Hub'}
                 </h2>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#25D366]/20 text-[#128C7E]">
-                  Meta Verified
+                  Verified
                 </span>
               </div>
               <p className="text-xs text-[#111010]/70">
-                Official Ingestion Channel (+94 11 234 5678) • E.164 Identity Resolution &amp; Stateless OCI Buffer Ingestion
+                Official club channel • +94 11 234 5678
               </p>
             </div>
           </div>
@@ -374,17 +372,17 @@ export function WhatsAppCloudWorkbench({
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5 text-emerald-800 font-semibold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>OCI self-hosted • 161.118.247.101.sslip.io</span>
+              <span>Secure connection</span>
             </div>
             <div className="flex items-center gap-1.5 text-blue-800 font-semibold bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
               <Lock className="w-3.5 h-3.5 text-blue-600" />
-              <span>Colocated Kong Gateway • Buffer Stream to i2i-proofs</span>
+              <span>Evidence stored privately</span>
             </div>
           </div>
 
-          {/* Active E.164 Phone Identity */}
+          {/* Active verified sender */}
           <div className="flex items-center gap-2 bg-[#F0F3F5] px-3 py-1 rounded-lg border border-[#111010]/10">
-            <span className="text-[11px] text-[#111010]/70">Verified E.164 Sender:</span>
+            <span className="text-[11px] text-[#111010]/70">Verified sender:</span>
             <span className="font-mono font-bold text-[#005FA3]">
               +{activePhoneNumber}
             </span>
@@ -433,7 +431,7 @@ export function WhatsAppCloudWorkbench({
                 Submission Status &amp; Location Details
               </span>
               <span className="hai-tag text-[10px] font-mono font-bold">
-                E.164: +{activePhoneNumber}
+                Phone: +{activePhoneNumber}
               </span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
@@ -562,7 +560,7 @@ export function WhatsAppCloudWorkbench({
 
             <div className="text-right">
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#128C7E] text-white">
-                EU-FRA1 ONLINE
+                ONLINE
               </span>
             </div>
           </div>
