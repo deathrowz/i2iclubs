@@ -729,6 +729,18 @@ export const DEMO_USERS: UserProfile[] = [
   // Realistic Operational Pilot Personas (Supabase Cloud Authenticated)
   // Default test password across accounts: I2IClubs2026!Secure
   // ------------------------------------------------------------------------
+  // Persona 0a: Platform Owner — technical owner of the platform (super admin)
+  {
+    id: 'usr-platform-owner',
+    auth_user_id: 'eb9d71a5-5a7d-4425-a2db-831c846e1838',
+    email: 'asanga.cdn@gmail.com',
+    login_code: 'PLATFORM-OWNER',
+    organization: 'I2I Clubs Platform',
+    full_name: 'Asanga (Platform Owner)',
+    role: 'super_admin',
+    school_id: null,
+    club_id: null,
+  },
   // Persona 0: GIZ Super Admin (Budhikka Gunasekera)
   {
     id: 'usr-giz-superadmin-budhikka',
