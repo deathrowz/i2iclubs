@@ -2,8 +2,10 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { Clubs } from './ClubsPanel';
 import {
   AlertTriangle,
+  Building2,
   Check,
   CheckCircle2,
   KeyRound,
@@ -21,7 +23,7 @@ import {
   X,
 } from 'lucide-react';
 
-type Tab = 'overview' | 'people' | 'features' | 'system';
+type Tab = 'overview' | 'clubs' | 'people' | 'features' | 'system';
 
 interface Metrics {
   totals: { schools: number; clubs: number; users: number; submissions: number; auditEntries: number; healthAlerts: number };
@@ -66,6 +68,7 @@ const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const SECTIONS: { id: Tab; label: string; blurb: string; icon: typeof Users }[] = [
   { id: 'overview', label: 'Overview', blurb: 'What needs a decision today, and how the pilot is trending.', icon: ShieldCheck },
+  { id: 'clubs', label: 'Clubs', blurb: 'Create school clubs, rename them, and move people in and out.', icon: Building2 },
   { id: 'people', label: 'People', blurb: 'Accounts, roles and access across every school.', icon: Users },
   { id: 'features', label: 'Capabilities', blurb: 'Switch platform functions on or off for everyone.', icon: Settings2 },
   { id: 'system', label: 'System', blurb: 'Hosting, storage and messaging service status.', icon: Server },
@@ -144,6 +147,7 @@ export default function SuperAdminConsole() {
           </div>
 
           {tab === 'overview' && <Overview onError={setError} onOpenPeople={() => setTab('people')} />}
+          {tab === 'clubs' && <Clubs onError={setError} />}
           {tab === 'people' && <People onError={setError} />}
           {tab === 'features' && <Features onError={setError} />}
           {tab === 'system' && <SystemPanel onError={setError} />}

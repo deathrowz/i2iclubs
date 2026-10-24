@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthError, requireAdmin, requireSuperAdmin } from '@/lib/auth/guards';
-import { getPlatformStore } from '@/lib/store/platform-store';
+import { getPlatformStore, getUserActivitySummaries } from '@/lib/store/platform-store';
 import { createServiceSupabase } from '@/lib/supabase/server';
 import { UserProfile, UserRole } from '@/types/domain';
 
@@ -20,6 +20,7 @@ export async function GET() {
   try {
     await requireAdmin();
     const store = getPlatformStore();
+    const activity = getUserActivitySummaries();
 
     return NextResponse.json({
       ok: true,
@@ -33,10 +34,14 @@ export async function GET() {
         school_id: u.school_id,
         school_code: u.school_code,
         club_id: u.club_id,
+        club_name: u.club_name,
         hasPassword: Boolean(u.auth_user_id),
+        lastSeenAt: activity[u.id]?.lastSeenAt ?? null,
+        hoursLast7Days: activity[u.id]?.hoursLast7Days ?? 0,
       })),
       roles: ASSIGNABLE_ROLES,
       schools: store.schools.map((s) => ({ id: s.id, code: s.code, name: s.name })),
+      clubs: store.clubs.map((c) => ({ id: c.id, name: c.name, school_code: c.school_code })),
     });
   } catch (err) {
     const status = err instanceof AuthError ? err.status : 500;

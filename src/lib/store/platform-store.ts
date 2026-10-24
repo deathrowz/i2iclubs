@@ -35,6 +35,11 @@ import {
 import { calculateDistanceMeters } from '@/lib/exif/parser';
 import { getSupabaseBrowserClient, getSupabaseServiceClient } from '@/lib/supabase/client';
 
+export interface ActivityPing {
+  userId: string;
+  at: string; // ISO timestamp
+}
+
 interface PlatformState {
   schools: School[];
   clubs: Club[];
@@ -44,6 +49,7 @@ interface PlatformState {
   gamificationConfig: GamificationConfig;
   whatsappMessages: WhatsAppBotOutboundMessage[];
   telegramMessages: TelegramBotOutboundMessage[];
+  activity: ActivityPing[];
 }
 
 // Global singleton in-memory store (persists across hot-reloads in dev & API requests)
@@ -65,6 +71,7 @@ function createInitialState(): PlatformState {
     gamificationConfig: structuredClone(INITIAL_GAMIFICATION_CONFIG),
     whatsappMessages: initialMessages,
     telegramMessages: initialMessages,
+    activity: [],
   };
 }
 
@@ -1118,3 +1125,229 @@ export function getFullPlatformSnapshot() {
 }
 
 export const submitExpertScoresViaTelegram = submitExpertScoresViaWhatsApp;
+
+/* ============================================================================
+ * ACTIVITY TRACKING
+ * A lightweight heartbeat: every signed-in visit records a ping. "Last seen"
+ * is the newest ping; "hours on platform" counts distinct clock-hours with at
+ * least one ping, which is the closest honest proxy for time spent without
+ * instrumenting session start/end.
+ * ========================================================================== */
+
+const ACTIVITY_RETENTION_DAYS = 30;
+
+export function recordActivity(userId: string): void {
+  const store = getPlatformStore();
+  const now = new Date();
+  store.activity.push({ userId, at: now.toISOString() });
+
+  const cutoff = new Date(now.getTime() - ACTIVITY_RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  if (store.activity.length > 5000) {
+    store.activity = store.activity.filter((p) => p.at >= cutoff);
+  }
+}
+
+export interface UserActivitySummary {
+  lastSeenAt: string | null;
+  hoursLast7Days: number;
+  activeDaysLast7Days: number;
+}
+
+export function getUserActivitySummaries(): Record<string, UserActivitySummary> {
+  const store = getPlatformStore();
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  const summaries: Record<string, UserActivitySummary> = {};
+  const hourBuckets = new Map<string, Set<string>>();
+  const dayBuckets = new Map<string, Set<string>>();
+
+  for (const ping of store.activity) {
+    const current = summaries[ping.userId] ?? {
+      lastSeenAt: null,
+      hoursLast7Days: 0,
+      activeDaysLast7Days: 0,
+    };
+    if (!current.lastSeenAt || ping.at > current.lastSeenAt) current.lastSeenAt = ping.at;
+    summaries[ping.userId] = current;
+
+    if (ping.at >= since) {
+      const day = ping.at.slice(0, 10);
+      const hour = ping.at.slice(0, 13);
+      if (!hourBuckets.has(ping.userId)) hourBuckets.set(ping.userId, new Set());
+      if (!dayBuckets.has(ping.userId)) dayBuckets.set(ping.userId, new Set());
+      hourBuckets.get(ping.userId)!.add(hour);
+      dayBuckets.get(ping.userId)!.add(day);
+    }
+  }
+
+  for (const [userId, hours] of hourBuckets) {
+    summaries[userId].hoursLast7Days = hours.size;
+    summaries[userId].activeDaysLast7Days = dayBuckets.get(userId)?.size ?? 0;
+  }
+
+  return summaries;
+}
+
+/* ============================================================================
+ * SCHOOL CLUB MANAGEMENT (Super Admin)
+ * ========================================================================== */
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+}
+
+function recountMembers(clubId: string): void {
+  const store = getPlatformStore();
+  const club = store.clubs.find((c) => c.id === clubId);
+  if (!club) return;
+  club.active_members_count = store.users.filter((u) => u.club_id === clubId).length;
+}
+
+export function createSchoolClub(params: {
+  schoolId: string;
+  name: string;
+  tagline?: string;
+  circularSector?: string;
+  actorId: string;
+}): Club {
+  const store = getPlatformStore();
+  const school = store.schools.find((s) => s.id === params.schoolId);
+  if (!school) throw new Error('School not found.');
+
+  const name = params.name.trim();
+  if (name.length < 3) throw new Error('Club name needs at least 3 characters.');
+
+  let slug = slugify(name);
+  if (!slug) throw new Error('Club name must contain letters or numbers.');
+  if (store.clubs.some((c) => c.slug === slug)) slug = `${slug}-${Date.now().toString(36).slice(-4)}`;
+
+  const club: Club = {
+    id: `club-${Date.now().toString(36)}`,
+    school_id: school.id,
+    school_name: school.name,
+    school_code: school.code,
+    slug,
+    name,
+    tagline: params.tagline?.trim() || `Student circular enterprise at ${school.name}`,
+    circular_sector: params.circularSector?.trim() || 'Circular Upcycling',
+    business_model_canvas: {
+      value_proposition: '',
+      circular_feedstock: '',
+      revenue_streams: [],
+      cost_structure: [],
+      customer_segments: [],
+      environmental_kpi: '',
+    },
+    org_chart: [],
+    approved_milestones: [],
+    criteria_baseline: {
+      relevance: 75,
+      business: 70,
+      feasibility: 75,
+      student_ownership: 80,
+      sustainability: 80,
+      institutional_commitment: Math.round(school.institutional_commitment_score),
+    },
+    active_members_count: 0,
+    last_submission_at: new Date().toISOString(),
+  };
+
+  store.clubs.push(club);
+  store.auditLogs.unshift({
+    id: `aud-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+    impact_log_id: '',
+    club_id: club.id,
+    club_name: club.name,
+    school_id: school.id,
+    school_name: school.name,
+    school_code: school.code,
+    actor_id: params.actorId,
+    actor_name: 'Super Administrator',
+    actor_role: 'super_admin',
+    action_type: 'STUDENT_SUBMISSION_CREATED',
+    previous_status: null,
+    new_status: 'pending',
+    points_delta: 0,
+    reason_or_notes: `Club created: ${club.name} at ${school.name}`,
+    metadata: { event: 'CLUB_CREATED', slug: club.slug },
+    created_at: new Date().toISOString(),
+  });
+
+  return club;
+}
+
+export function updateSchoolClub(
+  clubId: string,
+  patch: { name?: string; tagline?: string; circularSector?: string; schoolId?: string }
+): Club {
+  const store = getPlatformStore();
+  const club = store.clubs.find((c) => c.id === clubId);
+  if (!club) throw new Error('Club not found.');
+
+  if (patch.name !== undefined) {
+    const name = patch.name.trim();
+    if (name.length < 3) throw new Error('Club name needs at least 3 characters.');
+    club.name = name;
+  }
+  if (patch.tagline !== undefined) club.tagline = patch.tagline.trim();
+  if (patch.circularSector !== undefined) club.circular_sector = patch.circularSector.trim();
+
+  if (patch.schoolId !== undefined && patch.schoolId !== club.school_id) {
+    const school = store.schools.find((s) => s.id === patch.schoolId);
+    if (!school) throw new Error('School not found.');
+    club.school_id = school.id;
+    club.school_name = school.name;
+    club.school_code = school.code;
+  }
+
+  return club;
+}
+
+export function deleteSchoolClub(clubId: string): { unassignedUsers: number } {
+  const store = getPlatformStore();
+  const index = store.clubs.findIndex((c) => c.id === clubId);
+  if (index === -1) throw new Error('Club not found.');
+
+  let unassignedUsers = 0;
+  for (const user of store.users) {
+    if (user.club_id === clubId) {
+      user.club_id = null;
+      user.club_name = undefined;
+      unassignedUsers += 1;
+    }
+  }
+
+  store.clubs.splice(index, 1);
+  return { unassignedUsers };
+}
+
+export function assignUserToClub(userId: string, clubId: string | null): UserProfile {
+  const store = getPlatformStore();
+  const user = store.users.find((u) => u.id === userId);
+  if (!user) throw new Error('User not found.');
+
+  const previousClubId = user.club_id ?? null;
+
+  if (clubId === null) {
+    user.club_id = null;
+    user.club_name = undefined;
+  } else {
+    const club = store.clubs.find((c) => c.id === clubId);
+    if (!club) throw new Error('Club not found.');
+    user.club_id = club.id;
+    user.club_name = club.name;
+    // Keep the school in step with the club — a club always belongs to one school.
+    user.school_id = club.school_id;
+    user.school_name = club.school_name;
+    user.school_code = club.school_code;
+  }
+
+  if (previousClubId) recountMembers(previousClubId);
+  if (clubId) recountMembers(clubId);
+
+  return user;
+}
