@@ -44,7 +44,8 @@ export function GameAnimatedXpMeter({
   const absolutePct = Math.min(100, Math.max(2, (currentScore / MAX_TIER_SCORE) * 100));
 
   const [displayedScore, setDisplayedScore] = useState(currentScore);
-  const [fillPct, setFillPct] = useState(absolutePct);
+  // Start empty so the rail visibly fills on mount.
+  const [fillPct, setFillPct] = useState(0);
 
   // Roll-up counter. Skipped (jumps straight to the value) under reduced motion.
   useEffect(() => {
@@ -102,7 +103,7 @@ export function GameAnimatedXpMeter({
           </div>
         </div>
 
-        <div className="text-right">
+        <div className="text-right animate-xp-score" style={{ transformOrigin: 'right center' }}>
           <div className="text-[10px] font-mono uppercase tracking-wider text-[#111010]/60">
             Green Points
           </div>
@@ -127,16 +128,33 @@ export function GameAnimatedXpMeter({
           <span className="font-mono text-[#111010]/60 font-semibold">{absolutePct.toFixed(0)}%</span>
         </div>
 
-        <div className="relative w-full h-6 rounded-full bg-[#E6F1FA] border border-[#005FA3]/20 overflow-visible">
+        <div className="relative w-full h-6 rounded-full bg-[#E6F1FA] border border-[#005FA3]/20">
+          {/* Fill bar with a one-shot shine sweep across the filled portion */}
           <div
-            className="h-full rounded-full bg-gradient-to-r from-[#005FA3] to-[#0E7AC7] transition-[width] duration-700 ease-out"
+            className="relative h-full rounded-full bg-gradient-to-r from-[#005FA3] to-[#0E7AC7] overflow-hidden transition-[width] duration-700 ease-out"
             style={{ width: `${fillPct}%` }}
-          />
+          >
+            <span
+              aria-hidden
+              className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/55 to-transparent animate-xp-shine"
+            />
+          </div>
+
+          {/* Leading-edge spark — slow idle breathing glow after the entry fill */}
+          <span
+            aria-hidden
+            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none transition-[left] duration-700 ease-out"
+            style={{ left: `${fillPct}%` }}
+          >
+            <span className="block w-4 h-4 rounded-full bg-white animate-xp-spark" />
+          </span>
 
           {/* Milestone nodes for each tier */}
           {GAMIFICATION_TIERS.map((tier) => {
             const nodePct = (tier.threshold / MAX_TIER_SCORE) * 100;
             const unlocked = currentScore >= tier.threshold;
+            // Pop as the fill reaches the node (fill transition ≈ 700ms).
+            const popDelayMs = Math.round((nodePct / 100) * 700) + 60;
             return (
               <div
                 key={tier.level}
@@ -149,7 +167,8 @@ export function GameAnimatedXpMeter({
                     unlocked
                       ? 'border-[#005FA3] text-[#005FA3]'
                       : 'border-[#005FA3]/30 text-[#111010]/40'
-                  }`}
+                  } ${unlocked ? 'animate-xp-gem' : ''}`}
+                  style={unlocked ? { animationDelay: `${popDelayMs}ms` } : undefined}
                 >
                   {unlocked ? (
                     tier.level === 4 ? (

@@ -45,6 +45,25 @@ import {
 } from '@/components/BadgeIllustrations';
 import { GameAnimatedXpMeter } from '@/components/GameAnimatedXpMeter';
 
+/**
+ * Compact badge chip: encodes tier + XP in one legible line ("T2 · 128 XP")
+ * so the tile needs a single readable element instead of two 10-11px lines.
+ */
+function badgeChipLabel(badge: {
+  tierName?: string;
+  xp?: string;
+  metric?: string;
+  unlocked?: boolean;
+}): string {
+  const tierMatch = String(badge.tierName ?? '').match(/Tier\s*(\d)/i);
+  const xp = String(badge.xp ?? '').trim();
+  const xpHasNumber = /\d/.test(xp);
+
+  if (tierMatch && xpHasNumber) return `T${tierMatch[1]} · ${xp.replace(/^\+/, '')}`;
+  if (xpHasNumber) return xp.replace(/^\+/, '');
+  return badge.unlocked ? String(badge.metric ?? '') : 'Locked';
+}
+
 export interface StudentGamificationHeroProps {
   school: School;
   club: Club;
@@ -616,17 +635,21 @@ export function StudentGamificationHero({
                 )}
               </div>
 
-              {/* Title Directly Below (Exact Reference Typography) */}
-              <div className="mt-3 space-y-0.5 max-w-[140px]">
-                <div className="text-xs font-extrabold text-[#111010] uppercase tracking-wide group-hover:text-[#005FA3] transition-colors leading-tight font-[var(--font-jakarta)]">
+              {/* Title + XP chip. The name reserves a two-line slot so every
+                  chip in the grid shares one baseline regardless of wrapping. */}
+              <div className="mt-3 flex w-[120px] flex-col items-center gap-1.5">
+                <div className="flex h-8 items-center justify-center text-center text-xs font-extrabold uppercase tracking-wide text-[#111010] transition-colors group-hover:text-[#005FA3] leading-tight font-[var(--font-jakarta)]">
                   {badge.name}
                 </div>
-                <div className="text-[11px] text-[#111010]/60 font-medium">
-                  {badge.unlocked ? badge.date : 'Locked Milestone'}
-                </div>
-                <div className="text-[10px] font-mono font-semibold text-[#005FA3] mt-0.5">
-                  {badge.metric}
-                </div>
+                <span
+                  className={`rounded-full px-2.5 py-[3px] font-mono text-xs font-bold ${
+                    badge.unlocked
+                      ? 'bg-[#9CF2F2] text-[#005FA3]'
+                      : 'bg-[#F0F3F5] text-[#111010]/45'
+                  }`}
+                >
+                  {badgeChipLabel(badge)}
+                </span>
               </div>
             </div>
           ))}
