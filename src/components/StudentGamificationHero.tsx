@@ -23,6 +23,7 @@ import {
   UserProfile,
 } from '@/types/domain';
 import { formatLkr } from '@/lib/gamification/engine';
+import { getGamificationTier, getTierProgress } from '@/lib/gamification/tiers';
 import {
   BadgeGpsGuardian,
   BadgeZeroWaste,
@@ -67,62 +68,16 @@ export function StudentGamificationHero({
   const [badgeFilter, setBadgeFilter] = useState<'all' | 'tracks' | 'milestones'>('all');
   const [selectedBadgeModal, setSelectedBadgeModal] = useState<any | null>(null);
 
-  // Determine current tier, next tier, and remaining points
-  const tierConfig = (() => {
-    if (currentScore >= 420) {
-      return {
-        level: 4,
-        tierName: 'Platinum Eco-Enterprise',
-        badgeColor: 'from-cyan-400 to-blue-500',
-        textColor: 'text-cyan-200',
-        nextTierName: 'Platinum Max Tier (Rs. 1,050,000 Grant Unlocked)',
-        targetScore: 500,
-        progressPct: 100,
-        pointsRemaining: 0,
-        transitionLabel: 'Platinum Eco-Enterprise ★ Top National Tier',
-      };
-    }
-    if (currentScore >= 340) {
-      const remaining = Number((420 - currentScore).toFixed(1));
-      return {
-        level: 3,
-        tierName: 'Gold Eco-Warrior',
-        badgeColor: 'from-amber-400 to-yellow-600',
-        textColor: 'text-amber-200',
-        nextTierName: 'Platinum Eco-Enterprise',
-        targetScore: 420,
-        progressPct: Math.min(100, Math.round(((currentScore - 340) / (420 - 340)) * 100)),
-        pointsRemaining: remaining,
-        transitionLabel: `Gold Eco-Warrior ➔ Platinum Eco-Enterprise: ${remaining} pts remaining`,
-      };
-    }
-    if (currentScore >= 260) {
-      const remaining = Number((340 - currentScore).toFixed(1));
-      return {
-        level: 2,
-        tierName: 'Silver Upcycler',
-        badgeColor: 'from-slate-300 to-slate-500',
-        textColor: 'text-slate-200',
-        nextTierName: 'Gold Eco-Warrior',
-        targetScore: 340,
-        progressPct: Math.min(100, Math.round(((currentScore - 260) / (340 - 260)) * 100)),
-        pointsRemaining: remaining,
-        transitionLabel: `Silver Upcycler ➔ Gold Eco-Warrior: ${remaining} pts remaining`,
-      };
-    }
-    const remaining = Number((260 - currentScore).toFixed(1));
-    return {
-      level: 1,
-      tierName: 'Rising Green Club',
-      badgeColor: 'from-emerald-400 to-teal-600',
-      textColor: 'text-emerald-200',
-      nextTierName: 'Silver Upcycler',
-      targetScore: 260,
-      progressPct: Math.min(100, Math.round((currentScore / 260) * 100)),
-      pointsRemaining: remaining,
-      transitionLabel: `Rising Green Club ➔ Silver Upcycler: ${remaining} pts remaining`,
-    };
-  })();
+  // Single source of truth for the score-based tier ladder.
+  const { current: currentTier, next: nextTier } = getGamificationTier(currentScore);
+  const { pointsRemaining } = getTierProgress(currentScore);
+
+  const tierConfig = {
+    level: currentTier.level,
+    tierName: currentTier.title,
+    nextTierName: nextTier ? nextTier.title : 'Platinum Max Tier (Rs. 1,050,000 Grant Unlocked)',
+    pointsRemaining,
+  };
 
   // Rivalry context
   const aboveEntry =
@@ -542,11 +497,6 @@ export function StudentGamificationHero({
         <div className="relative z-10 py-4">
           <GameAnimatedXpMeter
             currentScore={currentScore}
-            targetScore={tierConfig.targetScore}
-            level={tierConfig.level}
-            tierName={tierConfig.tierName}
-            nextTierName={tierConfig.nextTierName}
-            pointsRemaining={tierConfig.pointsRemaining}
             schoolCode={school.code}
             onLogActivityClick={onLogActivityClick}
           />

@@ -114,44 +114,7 @@ export function StudentGamifiedDashboardView({
   );
   const rejectedLogs = schoolLogs.filter((l) => l.status === 'rejected');
 
-  // Calculate next tier & XP progress bar for gamification
   const currentScore = schoolEntry.composite_leaderboard_score;
-  const nextTierInfo = (() => {
-    if (currentScore >= 420) {
-      return {
-        currentLevel: 'Level 4 • Platinum Eco-Enterprise',
-        nextLabel: 'Platinum Max Tier Unlocked (Rs. 1,050,000 Top-Off)',
-        targetScore: 500,
-        progressPct: Math.min(100, Math.round((currentScore / 500) * 100)),
-        pointsNeeded: 0,
-      };
-    }
-    if (currentScore >= 340) {
-      return {
-        currentLevel: 'Level 3 • Gold Circular Club',
-        nextLabel: 'Next Unlock: Platinum Grant (Rs. 1,050,000)',
-        targetScore: 420,
-        progressPct: Math.min(100, Math.round((currentScore / 420) * 100)),
-        pointsNeeded: Number((420 - currentScore).toFixed(1)),
-      };
-    }
-    if (currentScore >= 260) {
-      return {
-        currentLevel: 'Level 2 • Silver School Club',
-        nextLabel: 'Next Unlock: Gold Grant (Rs. 750,000)',
-        targetScore: 340,
-        progressPct: Math.min(100, Math.round((currentScore / 340) * 100)),
-        pointsNeeded: Number((340 - currentScore).toFixed(1)),
-      };
-    }
-    return {
-      currentLevel: 'Level 1 • Rising Green Club',
-      nextLabel: 'Next Unlock: Silver Grant (Rs. 450,000)',
-      targetScore: 260,
-      progressPct: Math.min(100, Math.round((currentScore / 260) * 100)),
-      pointsNeeded: Number((260 - currentScore).toFixed(1)),
-    };
-  })();
 
   // Friendly Rivalry: School ranked right above and right below
   const aboveEntry =
