@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthError, isAdminRole, requireSuperAdmin } from '@/lib/auth/guards';
 import { assignUserToClub, getPlatformStore } from '@/lib/store/platform-store';
+import { saveMembership } from '@/lib/store/club-repository';
 import { createServiceSupabase } from '@/lib/supabase/server';
 import { UserRole } from '@/types/domain';
 
@@ -77,6 +78,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     if (nextClubId !== undefined) {
       // Moving a person into a club also moves them into that club's school.
       assignUserToClub(user.id, nextClubId === '' ? null : nextClubId);
+      await saveMembership(user.id, user.club_id ?? null);
     }
 
     // Best-effort metadata sync so the auth account reflects the role.
