@@ -11,6 +11,8 @@ services:
       - "127.0.0.1:3005:3000"
     environment:
       - NODE_ENV=production
+      # Reach Kong over the Docker network instead of the public proxy.
+      - SUPABASE_INTERNAL_URL=http://supabase-kong:8000
       - NEXT_PUBLIC_SUPABASE_URL=https://161.118.247.101.sslip.io
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}

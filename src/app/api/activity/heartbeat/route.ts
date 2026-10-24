@@ -28,7 +28,7 @@ export async function POST() {
 
     if (!profile) return new NextResponse(null, { status: 204 });
 
-    recordActivity(profile.id);
+    await recordActivity(profile.id);
     return NextResponse.json({ ok: true });
   } catch {
     // Never let telemetry break a page load.

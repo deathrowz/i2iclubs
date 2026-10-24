@@ -20,7 +20,7 @@ export async function GET() {
   try {
     await requireAdmin();
     const store = getPlatformStore();
-    const activity = getUserActivitySummaries();
+    const activity = await getUserActivitySummaries();
 
     return NextResponse.json({
       ok: true,

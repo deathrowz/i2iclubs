@@ -13,7 +13,7 @@ export async function GET() {
     await requireAdmin();
 
     const store = getPlatformStore();
-    const activity = getUserActivitySummaries();
+    const activity = await getUserActivitySummaries();
 
     const clubs = store.clubs.map((club) => {
       const members = store.users

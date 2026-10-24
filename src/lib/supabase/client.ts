@@ -61,7 +61,11 @@ export function getSupabaseBrowserClient(): SupabaseClient | null {
 export function getSupabaseServiceClient(): SupabaseClient | null {
   if (!isSupabaseConfigured()) return null;
   const key = supabaseServiceRoleKey || supabaseAnonKey;
-  return createClient(supabaseUrl, key, {
+  // On the server, prefer the internal Kong address: it avoids a needless trip
+  // back out through the public proxy. In the browser this env var is undefined
+  // (it is not NEXT_PUBLIC_), so the public URL is used.
+  const url = process.env.SUPABASE_INTERNAL_URL || supabaseUrl;
+  return createClient(url, key, {
     auth: { persistSession: false },
   });
 }

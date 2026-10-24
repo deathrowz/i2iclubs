@@ -14,6 +14,16 @@ export function getSupabaseAnonKey(): string {
   return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
 }
 
+/**
+ * Server-side calls should reach Kong directly over the Docker network instead
+ * of going back out through the public hostname. Doing the round trip costs
+ * latency and, in this deployment, the public /rest/v1 path is gated by a
+ * separate proxy. Falls back to the public URL when unset (local dev).
+ */
+export function getInternalSupabaseUrl(): string {
+  return process.env.SUPABASE_INTERNAL_URL || getSupabaseUrl();
+}
+
 export function isSupabaseReady(): boolean {
   const url = getSupabaseUrl();
   return Boolean(url && !url.includes('your-project-id'));
@@ -53,7 +63,7 @@ export function createServiceSupabase(): SupabaseClient | null {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceKey || !isSupabaseReady()) return null;
 
-  return createClient(getSupabaseUrl(), serviceKey, {
+  return createClient(getInternalSupabaseUrl(), serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
