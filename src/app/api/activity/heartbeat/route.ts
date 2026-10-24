@@ -26,12 +26,12 @@ export async function POST() {
       }
     }
 
-    if (!profile) return NextResponse.json({ ok: false }, { status: 204 });
+    if (!profile) return new NextResponse(null, { status: 204 });
 
     recordActivity(profile.id);
     return NextResponse.json({ ok: true });
   } catch {
     // Never let telemetry break a page load.
-    return NextResponse.json({ ok: false }, { status: 204 });
+    return new NextResponse(null, { status: 204 });
   }
 }
