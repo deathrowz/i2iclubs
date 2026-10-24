@@ -1128,24 +1128,14 @@ export const submitExpertScoresViaTelegram = submitExpertScoresViaWhatsApp;
 
 /* ============================================================================
  * ACTIVITY TRACKING
- * A lightweight heartbeat: every signed-in visit records a ping. "Last seen"
- * is the newest ping; "hours on platform" counts distinct clock-hours with at
- * least one ping, which is the closest honest proxy for time spent without
- * instrumenting session start/end.
+ * A heartbeat records a ping per signed-in visit. Pings are persisted in
+ * Postgres when a service key is configured, so "last seen" and "hours this
+ * week" survive restarts; the in-memory list stays as a fallback for local
+ * development and for graceful degradation when the database is unreachable.
  * ========================================================================== */
 
 const ACTIVITY_RETENTION_DAYS = 30;
-
-export function recordActivity(userId: string): void {
-  const store = getPlatformStore();
-  const now = new Date();
-  store.activity.push({ userId, at: now.toISOString() });
-
-  const cutoff = new Date(now.getTime() - ACTIVITY_RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
-  if (store.activity.length > 5000) {
-    store.activity = store.activity.filter((p) => p.at >= cutoff);
-  }
-}
+const ACTIVITY_READ_DAYS = 30;
 
 export interface UserActivitySummary {
   lastSeenAt: string | null;
@@ -1153,15 +1143,14 @@ export interface UserActivitySummary {
   activeDaysLast7Days: number;
 }
 
-export function getUserActivitySummaries(): Record<string, UserActivitySummary> {
-  const store = getPlatformStore();
-  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+function summariseActivity(pings: ActivityPing[]): Record<string, UserActivitySummary> {
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
   const summaries: Record<string, UserActivitySummary> = {};
   const hourBuckets = new Map<string, Set<string>>();
   const dayBuckets = new Map<string, Set<string>>();
 
-  for (const ping of store.activity) {
+  for (const ping of pings) {
     const current = summaries[ping.userId] ?? {
       lastSeenAt: null,
       hoursLast7Days: 0,
@@ -1170,7 +1159,7 @@ export function getUserActivitySummaries(): Record<string, UserActivitySummary> 
     if (!current.lastSeenAt || ping.at > current.lastSeenAt) current.lastSeenAt = ping.at;
     summaries[ping.userId] = current;
 
-    if (ping.at >= since) {
+    if (ping.at >= sevenDaysAgo) {
       const day = ping.at.slice(0, 10);
       const hour = ping.at.slice(0, 13);
       if (!hourBuckets.has(ping.userId)) hourBuckets.set(ping.userId, new Set());
@@ -1186,6 +1175,57 @@ export function getUserActivitySummaries(): Record<string, UserActivitySummary> 
   }
 
   return summaries;
+}
+
+export async function recordActivity(userId: string): Promise<void> {
+  const store = getPlatformStore();
+  const at = new Date().toISOString();
+
+  store.activity.push({ userId, at });
+  const cutoff = new Date(Date.now() - ACTIVITY_RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  if (store.activity.length > 5000) {
+    store.activity = store.activity.filter((p) => p.at >= cutoff);
+  }
+
+  const supabase = getSupabaseServiceClient();
+  if (!supabase) return;
+
+  try {
+    const { error } = await supabase.from('activity_pings').insert({ user_id: userId, at });
+    if (error) {
+      console.warn('[activity] insert failed, kept in memory only:', error.message);
+    }
+  } catch (err) {
+    console.warn('[activity] insert threw, kept in memory only:', err);
+  }
+}
+
+export async function getUserActivitySummaries(): Promise<Record<string, UserActivitySummary>> {
+  const store = getPlatformStore();
+  const supabase = getSupabaseServiceClient();
+
+  if (supabase) {
+    try {
+      const since = new Date(Date.now() - ACTIVITY_READ_DAYS * 24 * 60 * 60 * 1000).toISOString();
+      const { data, error } = await supabase
+        .from('activity_pings')
+        .select('user_id, at')
+        .gte('at', since)
+        .order('at', { ascending: false })
+        .limit(20000);
+
+      if (!error && Array.isArray(data)) {
+        return summariseActivity(
+          data.map((row: { user_id: string; at: string }) => ({ userId: row.user_id, at: row.at }))
+        );
+      }
+      if (error) console.warn('[activity] read failed, using memory:', error.message);
+    } catch (err) {
+      console.warn('[activity] read threw, using memory:', err);
+    }
+  }
+
+  return summariseActivity(store.activity);
 }
 
 /* ============================================================================
