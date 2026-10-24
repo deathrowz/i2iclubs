@@ -1,16 +1,28 @@
 161.118.247.101.sslip.io {
-    # Forward Supabase API endpoints directly to colocated Kong gateway
+    # Forward Supabase API endpoints to the platform's own Kong gateway.
+    # Use the unique container name: the shared `supabase_default` network also
+    # carries a second Kong (the `ehs` stack) that aliases `kong`, so the bare
+    # name resolves to either container and ~half of requests hit the wrong
+    # gateway and fail with 401 "Unauthorized".
     handle /auth/v1/* {
-        reverse_proxy kong:8000
+        reverse_proxy supabase-kong:8000 {
+            header_up Host localhost:8000
+        }
     }
     handle /rest/v1/* {
-        reverse_proxy kong:8000
+        reverse_proxy supabase-kong:8000 {
+            header_up Host localhost:8000
+        }
     }
     handle /storage/v1/* {
-        reverse_proxy kong:8000
+        reverse_proxy supabase-kong:8000 {
+            header_up Host localhost:8000
+        }
     }
     handle /realtime/v1/* {
-        reverse_proxy kong:8000
+        reverse_proxy supabase-kong:8000 {
+            header_up Host localhost:8000
+        }
     }
 
     # Forward all other requests to Next.js Web App
