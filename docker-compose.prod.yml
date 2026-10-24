@@ -32,7 +32,10 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Mount the directory, not the file: a single-file bind mount pins the
+      # inode, so edits on the host are invisible to the container and
+      # `caddy reload` silently reloads the stale copy.
+      - ./caddy:/etc/caddy
       - caddy_data:/data
       - caddy_config:/config
     networks:
