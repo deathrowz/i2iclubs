@@ -19,7 +19,7 @@ import {
 
 /**
  * Isomorphic Platform Bridge:
- * - In full-stack server environments (Next.js dev/start, Vercel, Docker), calls `/api/platform` & `/api/webhook/whatsapp`.
+ * - In full-stack server environments (Next.js dev/start, OCI Docker), calls `/api/platform` & `/api/webhook/whatsapp`.
  * - In static export environments (GitHub Pages `output: 'export'`), falls back seamlessly to the isomorphic in-browser platform engine.
  * - Always merges real-time records from Supabase PostgreSQL (e.g. newly uploaded WhatsApp Cloud API submissions).
  */

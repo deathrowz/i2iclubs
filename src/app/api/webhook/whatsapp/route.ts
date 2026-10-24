@@ -4,8 +4,7 @@
  * I2I Clubs (Idea2Impact) • GIZ Sri Lanka 15-School Pilot Platform
  *
  * Compliance:
- * - Execution Target: Vercel Frankfurt (fra1) strictly for EU GDPR / AVV compliance
- * - Zero OCI / Non-EU proxying (Never route through 168.107.65.183 Singapore OCI)
+ * - Execution Target: OCI self-hosted stack — Next.js behind Caddy (161.118.247.101.sslip.io) + colocated Supabase
  * - Stateless Ingestion: Stream binary buffers directly into Supabase Storage (i2i-proofs / haritha-proofs)
  * - Strict Webhook Security: SHA-256 HMAC verification via crypto.timingSafeEqual
  * - Identity Resolution: E.164 MSISDN normalization against public.profiles
@@ -20,7 +19,6 @@ import { getPlatformStore, findOrFetchImpactLog } from '@/lib/store/platform-sto
 import { ImpactLog } from '@/types/domain';
 
 export const runtime = 'nodejs';
-export const preferredRegion = 'fra1'; // Strictly Vercel Frankfurt, Germany (EU GDPR)
 export const dynamic = 'force-dynamic';
 
 

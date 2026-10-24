@@ -99,7 +99,7 @@ export default function AdminSimulatorPage() {
                 </span>
               </div>
               <div className="text-[11px] font-medium text-[#111010]/65 mt-0.5">
-                Stateless WhatsApp Cloud Webhook Diagnostic Environment • Vercel Frankfurt (fra1)
+                Stateless WhatsApp Cloud Webhook Diagnostic Environment • OCI self-hosted
               </div>
             </div>
           </div>
@@ -107,7 +107,7 @@ export default function AdminSimulatorPage() {
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-mono font-semibold">
               <Server className="w-3.5 h-3.5 text-emerald-600" />
-              <span>EU-FRA1 • Supabase eu-central-1</span>
+              <span>OCI self-hosted • Colocated Supabase</span>
             </div>
 
             <Link

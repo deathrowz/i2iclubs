@@ -68,7 +68,7 @@ jobs:
         env:
           GITHUB_PAGES: 'true'
           NEXT_PUBLIC_BASE_PATH: '/${{ github.event.repository.name }}'
-          NEXT_PUBLIC_SUPABASE_URL: 'https://dqrdhvrunmnufxpcxnuq.supabase.co'
+          NEXT_PUBLIC_SUPABASE_URL: 'https://161.118.247.101.sslip.io'
           NEXT_PUBLIC_SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxcmRodnJ1bm1udWZ4cGN4bnVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3OTcwNDcsImV4cCI6MjEwNzM3MzA0N30.vZ7QF5DLf1KG_pDA9p_b_dsZ2ELG30im1NeoI365dAg'
         run: |
           cp -r src/app/api /tmp/nextjs-api-routes-backup

@@ -8,7 +8,7 @@
  * 2. Strict HMAC SHA-256 Signature Verification via crypto.timingSafeEqual
  * 3. E.164 Identity Resolution (message.from -> public.profiles)
  * 4. Graceful handling of unregistered senders (200 OK without 500 errors)
- * 5. Direct Supabase Frankfurt Storage & Submissions DB Ingestion
+ * 5. Direct Supabase (OCI self-hosted) Storage & Submissions DB Ingestion
  * ============================================================================
  */
 

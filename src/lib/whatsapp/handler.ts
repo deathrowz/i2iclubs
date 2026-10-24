@@ -4,7 +4,7 @@
  * I2I Clubs (Idea2Impact) • GIZ Sri Lanka 15-School Pilot Platform
  *
  * Full-stack / Client Isomorphic Bridge:
- * - Direct webhook execution in Vercel Frankfurt (fra1) + Supabase Frankfurt (eu-central-1)
+ * - Direct webhook execution on the OCI self-hosted stack (161.118.247.101.sslip.io) + colocated Supabase
  * - In-browser fallback for static GitHub Pages export and interactive UI workbench
  * - Identity resolution via E.164 phone numbers (MSISDN)
  * - Stateless media buffer ingestion into private 'i2i-proofs' bucket
@@ -244,7 +244,7 @@ export async function handleWhatsAppCloudUpdate(
         `• Recycled Waste: ${totalWaste.toFixed(1)} kg\n` +
         `• Verified Revenue: ${formatLkr(totalSales)}\n` +
         `• Supervising Teacher: ${actor.role === 'teacher' ? actor.full_name : 'Verified on Campus'}\n` +
-        `• WhatsApp Pipeline: Active (Graph API v20.0 EU-Frankfurt)`,
+        `• WhatsApp Pipeline: Active (Graph API v20.0 • OCI self-hosted)`,
       stage: session.stage,
       quickActions: STUDENT_QUICK_ACTIONS,
     };
@@ -348,7 +348,7 @@ export async function handleWhatsAppCloudUpdate(
       docCategory,
       fileName: update.document.fileName,
       mimeType: update.document.mimeType,
-      s3Url: `https://dqrdhvrunmnufxpcxnuq.supabase.co/storage/v1/object/authenticated/i2i-proofs/${update.document.fileName}`,
+      s3Url: `${process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:8000'}/storage/v1/object/authenticated/i2i-proofs/${update.document.fileName}`,
       s3Key: `invoices/${targetLog.school_code}/${update.document.fileName}`,
       notes: 'Supervising teacher uploaded verified official invoice via WhatsApp Cloud API.',
       uploadedViaTelegram: true, // Backwards-compatible flag
@@ -559,7 +559,7 @@ export async function handleWhatsAppCloudUpdate(
 
     session.fileName = update.document.fileName;
     session.mimeType = update.document.mimeType;
-    session.s3Url = `https://dqrdhvrunmnufxpcxnuq.supabase.co/storage/v1/object/authenticated/i2i-proofs/${update.document.fileName}`;
+    session.s3Url = `${process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:8000'}/storage/v1/object/authenticated/i2i-proofs/${update.document.fileName}`;
     session.s3Key = `evidence/${school.code}/${update.document.fileName}`;
     session.exif = parsed.metadata;
     session.stage = 'AWAITING_ACTIVITY_TITLE';

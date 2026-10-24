@@ -173,7 +173,7 @@ export function WhatsAppCloudWorkbench({
       text:
         `Ayubowan / Vanakkam! 🌿 Welcome to the *I2I Clubs (Idea2Impact)* WhatsApp Cloud Ingestion Gateway.\n\n` +
         `📱 Connected Account: *${selectedClub.name} • ${selectedSchool.name}*\n` +
-        `🇪🇺 Compliance: Vercel Frankfurt (fra1) • Supabase Frankfurt (eu-central-1)\n` +
+        `🇪🇺 Compliance: OCI self-hosted (161.118.247.101) • Colocated Supabase\n` +
         `🔒 Security: Meta Graph API v20.0 • SHA-256 HMAC & E.164 Identity Resolution Active.\n\n` +
         `Choose an action below to simulate student photo submissions, teacher invoice endorsements, or expert scoring!`,
       timestamp: '09:30 AM',
@@ -324,7 +324,7 @@ export function WhatsAppCloudWorkbench({
                 </span>
               </div>
               <p className="text-xs text-[#111010]/70">
-                Official Ingestion Channel (+94 11 234 5678) • E.164 Identity Resolution &amp; Stateless Frankfurt Buffer Ingestion
+                Official Ingestion Channel (+94 11 234 5678) • E.164 Identity Resolution &amp; Stateless OCI Buffer Ingestion
               </p>
             </div>
           </div>
@@ -374,11 +374,11 @@ export function WhatsAppCloudWorkbench({
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5 text-emerald-800 font-semibold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Vercel Frankfurt (fra1) • Supabase Frankfurt (eu-central-1)</span>
+              <span>OCI self-hosted • 161.118.247.101.sslip.io</span>
             </div>
             <div className="flex items-center gap-1.5 text-blue-800 font-semibold bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
               <Lock className="w-3.5 h-3.5 text-blue-600" />
-              <span>Zero OCI Proxying • Buffer Stream to i2i-proofs</span>
+              <span>Colocated Kong Gateway • Buffer Stream to i2i-proofs</span>
             </div>
           </div>
 
@@ -415,7 +415,7 @@ export function WhatsAppCloudWorkbench({
                 JSON.stringify(
                   {
                     endpoint: '/api/webhook/whatsapp',
-                    region: 'fra1 (Frankfurt)',
+                    region: 'OCI self-hosted (161.118.247.101)',
                     hub_verify: 'passed',
                     storage_bucket: 'i2i-proofs (private)',
                     status: 'Awaiting next action trigger...',

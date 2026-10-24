@@ -7,14 +7,14 @@ import {
   APPROVED_HISTORICAL_LOGS,
 } from '../src/lib/store/seed-data';
 
-const SUPABASE_URL = 'https://dqrdhvrunmnufxpcxnuq.supabase.co';
+const SUPABASE_URL = 'http://localhost:8000'; // OCI self-hosted Supabase (local dev); production: https://161.118.247.101.sslip.io
 const SUPABASE_ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxcmRodnJ1bm1udWZ4cGN4bnVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3OTcwNDcsImV4cCI6MjEwNzM3MzA0N30.vZ7QF5DLf1KG_pDA9p_b_dsZ2ELG30im1NeoI365dAg';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzkyMTc0MzI5LCJleHAiOjE5NDk4NTQzMjl9.LAXhM4gFBYfOr5bStoFMn77aK0MdRu6z6fVHrzzInPc';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function populate() {
-  console.log('🌱 Seeding Supabase circular-schools-pilot database...');
+  console.log('🌱 Seeding OCI self-hosted Supabase database...');
 
   // 1. Schools
   console.log(`Inserting ${PILOT_SCHOOLS.length} schools...`);
