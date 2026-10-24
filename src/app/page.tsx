@@ -471,7 +471,7 @@ export default function PlatformDashboardPage() {
         eyebrow: `Category 4 • Student Enterprise • ${activeUser.school_name} (${activeUser.school_code})`,
         title: 'WhatsApp Cloud Activity Logger (+94 11 234 5678)',
         subtitle:
-          'Meta Graph API v20.0: submit uncompressed activity photos, select enterprise categories, and log recycled kg & sales.',
+          'Log your club activity with a photo, choose what you did, and record the waste recycled and sales made.',
         badge: 'WhatsApp Verified',
       };
     }

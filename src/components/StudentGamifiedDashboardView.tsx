@@ -1085,7 +1085,7 @@ export function StudentGamifiedDashboardView({
                   5. Evidence Photo / Proof
                 </label>
                 <span className="text-[10px] text-[#005FA3] font-semibold">
-                  School premises verification enabled
+                  Location checked automatically
                 </span>
               </div>
 
@@ -1115,7 +1115,7 @@ export function StudentGamifiedDashboardView({
                       <span className="text-xs text-[#111010]/60"> or drag and drop</span>
                     </div>
                     <p className="text-[11px] text-[#111010]/55 max-w-sm">
-                      JPEG, PNG, HEIC up to 10 MB. Photos taken at school premises will automatically verify campus geofence.
+                      JPG, PNG or HEIC up to 10 MB. Photos taken at school are verified automatically.
                     </p>
 
                     <div className="pt-2">
@@ -1150,7 +1150,7 @@ export function StudentGamifiedDashboardView({
                       </div>
                       <div className="text-[11px] text-emerald-800 mt-0.5">
                         {photoExif?.isCampusVerified
-                          ? `📍 Location Verified: Royal College Colombo Campus (${photoExif.distanceMeters}m from center)`
+                          ? `📍 Location verified at ${school.name} (${photoExif.distanceMeters}m from centre)`
                           : `📍 Location Tagged: Campus coordinates linked to ${school.name}`}
                       </div>
                     </div>
