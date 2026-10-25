@@ -281,77 +281,72 @@ body {
 }
 
 /* ============================================================================
- * XP Meter Choreography
- * Entry: bar fills → gems pop as the fill passes → shine sweeps → score settles.
- * Idle: a slow, gentle breathing glow on the leading-edge spark (2s period).
+ * XP rail choreography
+ * Entry: the rail fills, each gate ignites as the fill reaches it, then the
+ *        marker settles and starts a slow breath.
+ * Idle:  a gentle pulse on the gate being chased, and nothing else.
  * ============================================================================ */
-@keyframes xp_spark_breathe {
+@keyframes xp_pod_breathe {
   0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 10px 2px rgba(0, 168, 150, 0.55);
+    transform: scaleY(1);
+    opacity: 0.95;
   }
   50% {
-    transform: scale(1.15);
-    box-shadow: 0 0 18px 6px rgba(0, 168, 150, 0.85);
-  }
-}
-
-@keyframes xp_shine_sweep {
-  0% {
-    transform: translateX(-130%);
-    opacity: 0;
-  }
-  15% {
+    transform: scaleY(1.18);
     opacity: 1;
   }
-  85% {
+}
+
+@keyframes xp_gate_ignite {
+  0% {
+    transform: scale(0.6) rotate(-25deg);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.28) rotate(4deg);
     opacity: 1;
   }
   100% {
-    transform: translateX(340%);
-    opacity: 0;
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
   }
 }
 
-@keyframes xp_gem_pop {
-  0% {
+@keyframes xp_goal_pulse {
+  0%, 100% {
+    opacity: 0.55;
     transform: scale(1);
   }
-  45% {
-    transform: scale(1.35);
-  }
-  100% {
-    transform: scale(1);
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
   }
 }
 
-@keyframes xp_score_pop {
-  0% {
-    transform: scale(1);
-  }
-  45% {
-    transform: scale(1.08);
-  }
-  100% {
-    transform: scale(1);
-  }
+/* Idle breathing starts once the entry fill has finished, then loops. */
+.animate-xp-pod {
+  animation: xp_pod_breathe 2.6s ease-in-out 1.2s infinite;
+  transform-origin: center;
 }
 
-/* Idle breathing starts once the entry fill has finished (1.8s), then loops. */
-.animate-xp-spark {
-  animation: xp_spark_breathe 2s ease-in-out 1.8s infinite;
+.animate-xp-gate {
+  animation: xp_gate_ignite 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transform-origin: center;
 }
 
-.animate-xp-shine {
-  animation: xp_shine_sweep 1.3s ease-in-out 0.15s 1 both;
+.animate-xp-goal {
+  animation: xp_goal_pulse 2.6s ease-in-out 1.6s infinite;
+  transform-origin: center;
 }
 
-.animate-xp-gem {
-  animation: xp_gem_pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+/* Rail geometry transitions live here, not in inline styles, so the
+   reduced-motion switch cannot disagree between server and client render. */
+.xp-rail-fill {
+  transition: clip-path 900ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.animate-xp-score {
-  animation: xp_score_pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 1s both;
+.xp-marker {
+  transition: left 900ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ============================================================================
@@ -367,11 +362,15 @@ body {
   .animate-laser-scanlines,
   .animate-spark-flare,
   .animate-node-pulse,
-  .animate-xp-spark,
-  .animate-xp-shine,
-  .animate-xp-gem,
-  .animate-xp-score {
+  .animate-xp-pod,
+  .animate-xp-gate,
+  .animate-xp-goal {
     animation: none;
+  }
+
+  .xp-rail-fill,
+  .xp-marker {
+    transition: none;
   }
 }
 

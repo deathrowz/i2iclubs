@@ -517,6 +517,7 @@ export function StudentGamificationHero({
           <GameAnimatedXpMeter
             currentScore={currentScore}
             schoolCode={school.code}
+            schoolName={school.name}
             onLogActivityClick={onLogActivityClick}
           />
         </div>
