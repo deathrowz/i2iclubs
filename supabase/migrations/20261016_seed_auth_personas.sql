@@ -16,7 +16,9 @@ ON CONFLICT (id) DO UPDATE SET
 
 -- ============================================================================
 -- 2. CREATE AUTH USERS & LINKED PROFILES
--- Default test password across accounts: I2IClubs2026!Secure
+-- Passwords are generated unguessable here so no working credential is ever
+-- committed. Run scripts/set-category-passwords.py after seeding to give the
+-- accounts the shared per-category passwords.
 -- ============================================================================
 
 DO $$
@@ -32,8 +34,9 @@ DECLARE
     -- Target School
     v_school_id UUID := '11111111-1111-1111-1111-111111111111';
 BEGIN
-    -- Hash password using Supabase-compatible blowfish
-    v_encrypted_pw := crypt('I2IClubs2026!Secure', gen_salt('bf'));
+    -- Unguessable by construction; replaced by the category passwords after
+    -- seeding (scripts/set-category-passwords.py).
+    v_encrypted_pw := crypt(gen_random_uuid()::text, gen_salt('bf'));
 
     -- ------------------------------------------------------------------------
     -- Persona 1: GIZ Project Lead / National Auditor (Admin Role)

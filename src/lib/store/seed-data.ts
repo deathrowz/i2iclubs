@@ -727,7 +727,9 @@ export const SCHOOL_TEACHER_LOGINS: UserProfile[] = CLUB_DEFINITIONS.map((def, i
 export const DEMO_USERS: UserProfile[] = [
   // ------------------------------------------------------------------------
   // Realistic Operational Pilot Personas (Supabase Cloud Authenticated)
-  // Default test password across accounts: I2IClubs2026!Secure
+  // Passwords are per category, not per account — see
+  // supabase/migrations/20261028_category_passwords.sql and
+  // i2i_clubs_dummy_logins.csv for the current set.
   // ------------------------------------------------------------------------
   // Persona 0a: Platform Owner — technical owner of the platform (super admin)
   {

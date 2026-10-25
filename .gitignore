@@ -24,3 +24,6 @@ yarn-error.log*
 
 # database migration bundle & raw dumps
 /supabase/migration/
+
+# live pilot credentials — distributed privately, never committed
+/i2i_clubs_dummy_logins.csv

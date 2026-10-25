@@ -6,10 +6,13 @@
  *
  *   NEXT_PUBLIC_SUPABASE_URL=https://... \
  *   SUPABASE_SERVICE_ROLE_KEY=... \
- *   SEED_PASSWORD='I2IClubs2026!Secure' \
+ *   SEED_PASSWORD='<any password over 8 chars>' \
  *   npx tsx scripts/seed-auth-users.ts
  *
  * Safe to re-run: existing accounts are left untouched.
+ *
+ * Accounts seeded this way all share SEED_PASSWORD. Follow up with
+ * scripts/set-category-passwords.py to give each category its own password.
  */
 import { createClient } from '@supabase/supabase-js';
 import { DEMO_USERS } from '../src/lib/store/seed-data';
