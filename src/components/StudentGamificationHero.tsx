@@ -56,13 +56,11 @@ function badgeChipLabel(badge: {
   metric?: string;
   unlocked?: boolean;
 }): string {
-  const tierMatch = String(badge.tierName ?? '').match(/Tier\s*(\d)/i);
   const xp = String(badge.xp ?? '').trim();
   const xpHasNumber = /\d/.test(xp);
 
-  if (tierMatch && xpHasNumber) return `T${tierMatch[1]} · ${xp.replace(/^\+/, '')}`;
-  if (xpHasNumber) return xp.replace(/^\+/, '');
-  return badge.unlocked ? String(badge.metric ?? '') : 'Locked';
+  if (badge.unlocked) return 'Earned';
+  return xpHasNumber ? xp.replace(/^\+/, '') : 'Locked';
 }
 
 export interface StudentGamificationHeroProps {
@@ -85,7 +83,6 @@ export function StudentGamificationHero({
   onLogActivityClick,
 }: StudentGamificationHeroProps) {
   const currentScore = schoolEntry.composite_leaderboard_score;
-  const [badgeFilter, setBadgeFilter] = useState<'all' | 'tracks' | 'milestones'>('all');
   const [selectedBadgeModal, setSelectedBadgeModal] = useState<any | null>(null);
 
   // Single source of truth for the score-based tier ladder.
@@ -225,7 +222,7 @@ export function StudentGamificationHero({
     // --- 6 CORE TRACK BADGES (Evolving Lvl 1 -> Lvl 4) ---
     {
       id: 'track_waste_to_value',
-      name: 'WASTE TO VALUE',
+      name: 'Waste to Value',
       fullName: 'Waste-to-Value Champion',
       type: 'track' as const,
       trackKey: 'waste_to_value',
@@ -247,7 +244,7 @@ export function StudentGamificationHero({
     },
     {
       id: 'track_school_enterprise',
-      name: 'ENTERPRISE STAR',
+      name: 'Enterprise Star',
       fullName: 'School Enterprise Star',
       type: 'track' as const,
       trackKey: 'school_enterprise',
@@ -269,7 +266,7 @@ export function StudentGamificationHero({
     },
     {
       id: 'track_action_ready',
-      name: 'ACTION READY',
+      name: 'Action Ready',
       fullName: 'Action Ready Club',
       type: 'track' as const,
       trackKey: 'action_ready',
@@ -291,7 +288,7 @@ export function StudentGamificationHero({
     },
     {
       id: 'track_student_leader',
-      name: 'STUDENT LEADER',
+      name: 'Student Leader',
       fullName: 'Student Eco-Leader',
       type: 'track' as const,
       trackKey: 'student_leader',
@@ -313,7 +310,7 @@ export function StudentGamificationHero({
     },
     {
       id: 'track_clean_community',
-      name: 'CLEAN COMMUNITY',
+      name: 'Clean Community',
       fullName: 'Clean Green Community',
       type: 'track' as const,
       trackKey: 'clean_community',
@@ -335,7 +332,7 @@ export function StudentGamificationHero({
     },
     {
       id: 'track_green_charter',
-      name: 'GREEN CHARTER',
+      name: 'Green Charter',
       fullName: 'Green Charter School',
       type: 'track' as const,
       trackKey: 'green_charter',
@@ -359,7 +356,7 @@ export function StudentGamificationHero({
     // --- PLATFORM MILESTONE BADGES (Cumulative Benchmarks & Feats) ---
     {
       id: 'milestone_first_action',
-      name: 'FIRST FOOTPRINT',
+      name: 'First Footprint',
       fullName: 'First Footprint',
       type: 'milestone' as const,
       category: 'Milestones',
@@ -374,7 +371,7 @@ export function StudentGamificationHero({
     },
     {
       id: 'milestone_500_club',
-      name: 'GREEN SEEDLING',
+      name: 'Green Seedling',
       fullName: 'Green Seedling',
       type: 'milestone' as const,
       category: 'Milestones',
@@ -389,7 +386,7 @@ export function StudentGamificationHero({
     },
     {
       id: 'milestone_1000_club',
-      name: 'CENTURY GROVE',
+      name: 'Century Grove',
       fullName: 'Century Grove',
       type: 'milestone' as const,
       category: 'Milestones',
@@ -404,7 +401,7 @@ export function StudentGamificationHero({
     },
     {
       id: 'milestone_2500_club',
-      name: 'PILOT VANGUARD',
+      name: 'Pilot Vanguard',
       fullName: 'National Pilot Vanguard',
       type: 'milestone' as const,
       category: 'Milestones',
@@ -419,7 +416,7 @@ export function StudentGamificationHero({
     },
     {
       id: 'milestone_zero_waste_100kg',
-      name: 'ZERO-WASTE 100KG',
+      name: 'Zero-Waste 100 kg',
       fullName: '100 kg Zero-Waste Milestone',
       type: 'milestone' as const,
       category: 'Milestones',
@@ -434,7 +431,7 @@ export function StudentGamificationHero({
     },
     {
       id: 'milestone_clean_audit',
-      name: 'AUDIT SHIELD',
+      name: 'Audit Shield',
       fullName: 'Clean Audit Shield',
       type: 'milestone' as const,
       category: 'Milestones',
@@ -449,11 +446,7 @@ export function StudentGamificationHero({
     },
   ];
 
-  const displayedBadges = allBadgesList.filter((b) => {
-    if (badgeFilter === 'tracks') return b.type === 'track';
-    if (badgeFilter === 'milestones') return b.type === 'milestone';
-    return true;
-  });
+  const displayedBadges = allBadgesList;
 
   const unlockedCount = allBadgesList.filter((b) => b.unlocked).length;
 
@@ -471,14 +464,10 @@ export function StudentGamificationHero({
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-white/15">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#9CF2F2] text-[#005FA3] font-mono text-xs font-bold shadow-xs">
-                <Crown className="w-3.5 h-3.5 fill-current" />
-                <span>National Rank #{schoolEntry.rank} of 15</span>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-[#9CF2F2] px-3 py-1 font-mono text-xs font-bold text-[#005FA3] shadow-xs">
+                <Crown className="h-3.5 w-3.5 fill-current" />
+                <span>Rank #{schoolEntry.rank} of 15 in Sri Lanka</span>
               </div>
-
-              <span className="px-3 py-1 rounded-full bg-white/15 text-white text-xs font-semibold border border-white/25">
-                Level {tierConfig.level} • {tierConfig.tierName}
-              </span>
 
               <span className="inline-flex items-center gap-1.5 rounded-full bg-black/20 py-[3px] pl-[3px] pr-3 text-xs font-bold text-[#9CF2F2]">
                 <SchoolLogo code={school.code} name={school.name} logoUrl={club.logo_url} size="xs" />
@@ -489,26 +478,20 @@ export function StudentGamificationHero({
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white font-[var(--font-jakarta)]">
               {school.name} — {club.name}
             </h1>
-            <p className="text-xs sm:text-sm text-white/85 max-w-2xl leading-relaxed">
-              {club.tagline} • Student Lead:{' '}
-              <strong className="text-[#9CF2F2]">{club.org_chart[0]?.holder_name}</strong>{' '}
-              • Supervising Teacher:{' '}
-              <strong className="text-white">{club.org_chart[3]?.holder_name}</strong>
+            <p className="max-w-2xl text-sm leading-relaxed text-white/85">{club.tagline}</p>
+            <p className="text-xs text-white/60">
+              Teacher: {club.org_chart[3]?.holder_name}
             </p>
           </div>
 
-          {/* Big Score / Grant Unlocked Badge */}
-          <div className="flex items-center gap-4 shrink-0">
-            <div className="bg-white/10 backdrop-blur-md border border-white/25 rounded-[20px_20px_20px_4px] px-6 py-4 text-center shadow-xs">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-[#9CF2F2]">
-                Total Green Points
-              </div>
-              <div className="text-3xl sm:text-4xl font-extrabold text-white font-mono mt-1">
-                {currentScore}{' '}
-                <span className="text-lg font-normal text-[#9CF2F2]">pts</span>
-              </div>
-              <div className="text-xs text-white/80 mt-1">
-                Grant: <strong className="text-[#9CF2F2]">{schoolEntry.topoff_funding_tier}</strong>
+          {/* The one number: green points. The meter below says what it is
+              worth and what the next reward costs, so neither repeats the
+              other. */}
+          <div className="shrink-0">
+            <div className="rounded-[20px_20px_20px_4px] border border-white/25 bg-white/10 px-6 py-4 text-center backdrop-blur-md">
+              <div className="text-[11px] font-semibold text-[#9CF2F2]">Green points</div>
+              <div className="mt-1 font-[var(--font-jakarta)] text-3xl font-extrabold tabular-nums text-white sm:text-4xl">
+                {currentScore}
               </div>
             </div>
           </div>
@@ -532,9 +515,7 @@ export function StudentGamificationHero({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
-                  {actionPrompt.badge}
-                </span>
+                <span className="text-xs font-bold text-amber-300">{actionPrompt.badge}</span>
                 <span className="text-xs text-white/70">• {actionPrompt.headline}</span>
               </div>
               <p className="text-xs sm:text-sm font-semibold text-white mt-0.5">
@@ -563,51 +544,17 @@ export function StudentGamificationHero({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#111010]/10">
           <div>
             <div className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-[#005FA3]" />
-              <h2 className="text-xl font-bold text-[#111010] font-[var(--font-jakarta)] tracking-tight">
-                School Achievement Badges &amp; Medals
+              <Award className="h-5 w-5 text-[#005FA3]" />
+              <h2 className="text-xl font-bold tracking-tight text-[#111010] font-[var(--font-jakarta)]">
+                Badges
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full bg-[#005FA3] text-[#9CF2F2] font-mono text-xs font-bold">
-                {unlockedCount}/{allBadgesList.length} Earned
+              <span className="rounded-full bg-[#005FA3] px-2.5 py-0.5 font-mono text-xs font-bold text-[#9CF2F2]">
+                {unlockedCount} of {allBadgesList.length}
               </span>
             </div>
-            <p className="text-xs text-[#111010]/65 mt-1">
-              Complete circular milestones and level up your school club to unlock official GIZ national honors
+            <p className="mt-1 text-xs text-[#111010]/65">
+              You earn these by doing real work for your club.
             </p>
-          </div>
-
-          {/* Filter Pills */}
-          <div className="flex items-center gap-1.5 p-1 rounded-full bg-[#F0F3F5] border border-[#111010]/10 text-xs">
-            <button
-              onClick={() => setBadgeFilter('all')}
-              className={`px-3 py-1 rounded-full font-semibold transition cursor-pointer ${
-                badgeFilter === 'all'
-                  ? 'bg-[#005FA3] text-[#9CF2F2] shadow-xs'
-                  : 'text-[#111010]/70 hover:text-[#111010]'
-              }`}
-            >
-              All ({allBadgesList.length})
-            </button>
-            <button
-              onClick={() => setBadgeFilter('tracks')}
-              className={`px-3 py-1 rounded-full font-semibold transition cursor-pointer ${
-                badgeFilter === 'tracks'
-                  ? 'bg-[#005FA3] text-[#9CF2F2] shadow-xs'
-                  : 'text-[#111010]/70 hover:text-[#111010]'
-              }`}
-            >
-              6 Core Tracks ({allBadgesList.filter((b) => b.type === 'track').length})
-            </button>
-            <button
-              onClick={() => setBadgeFilter('milestones')}
-              className={`px-3 py-1 rounded-full font-semibold transition cursor-pointer ${
-                badgeFilter === 'milestones'
-                  ? 'bg-[#005FA3] text-[#9CF2F2] shadow-xs'
-                  : 'text-[#111010]/70 hover:text-[#111010]'
-              }`}
-            >
-              Milestones ({allBadgesList.filter((b) => b.type === 'milestone').length})
-            </button>
           </div>
         </div>
 
@@ -641,7 +588,7 @@ export function StudentGamificationHero({
               {/* Title + XP chip. The name reserves a two-line slot so every
                   chip in the grid shares one baseline regardless of wrapping. */}
               <div className="mt-3 flex w-[120px] flex-col items-center gap-1.5">
-                <div className="flex h-8 items-center justify-center text-center text-xs font-extrabold uppercase tracking-wide text-[#111010] transition-colors group-hover:text-[#005FA3] leading-tight font-[var(--font-jakarta)]">
+                <div className="flex h-8 items-center justify-center text-center text-xs font-bold leading-tight text-[#111010] transition-colors group-hover:text-[#005FA3] font-[var(--font-jakarta)]">
                   {badge.name}
                 </div>
                 <span
@@ -660,88 +607,65 @@ export function StudentGamificationHero({
       </section>
 
       {/* ====================================================================
-       * Section 3: 4 Core Live KPI Cards (Waste, Sales, Unlocked Grant, Rivalry)
+       * Section 3: What the club has actually done — four plain numbers.
        * ==================================================================== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Recycled Waste */}
-        <div className="hai-card p-5 bg-white border border-[#111010]/15 space-y-2 hover:shadow-sm transition">
-          <div className="flex items-center justify-between text-xs text-[#005FA3] font-bold">
-            <span className="flex items-center gap-1.5">
-              <Leaf className="w-4 h-4 text-emerald-600" />
-              <span>Waste Diverted</span>
-            </span>
-            <span className="hai-cyan-pill text-[10px] font-bold">Milestone</span>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="hai-card space-y-1.5 border border-[#111010]/15 bg-white p-5">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#005FA3]">
+            <Leaf className="h-4 w-4 text-emerald-600" />
+            <span>Waste recycled</span>
           </div>
-          <div className="text-3xl font-extrabold text-[#111010] font-mono">
-            {schoolEntry.verified_waste_kg}{' '}
-            <span className="text-sm font-normal text-[#111010]/60">kg</span>
+          <div className="whitespace-nowrap font-[var(--font-jakarta)] text-2xl font-extrabold tabular-nums text-[#111010] sm:text-3xl">
+            {schoolEntry.verified_waste_kg}
+            <span className="ml-1 text-sm font-normal text-[#111010]/60">kg</span>
           </div>
-          <p className="text-xs text-[#111010]/65">
-            {schoolEntry.verified_co2_kg} kg CO₂e greenhouse gas avoided
+          <p className="text-xs leading-relaxed text-[#111010]/65">
+            That is {schoolEntry.verified_co2_kg} kg of climate pollution kept out of the air.
           </p>
         </div>
 
-        {/* Enterprise Sales */}
-        <div className="hai-card p-5 bg-white border border-[#111010]/15 space-y-2 hover:shadow-sm transition">
-          <div className="flex items-center justify-between text-xs text-[#005FA3] font-bold">
-            <span className="flex items-center gap-1.5">
-              <TrendingUp className="w-4 h-4 text-[#005FA3]" />
-              <span>Verified Sales</span>
-            </span>
-            <span className="hai-cyan-pill text-[10px] font-bold">Commercial</span>
+        <div className="hai-card space-y-1.5 border border-[#111010]/15 bg-white p-5">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#005FA3]">
+            <TrendingUp className="h-4 w-4" />
+            <span>Money your club earned</span>
           </div>
-          <div className="text-3xl font-extrabold text-[#111010] font-mono">
+          <div className="whitespace-nowrap font-[var(--font-jakarta)] text-2xl font-extrabold tabular-nums text-[#111010] sm:text-3xl">
             {formatLkr(schoolEntry.verified_revenue_usd)}
           </div>
-          <p className="text-xs text-[#111010]/65">
-            {approvedLogsCount} verified teacher &amp; expert transactions
+          <p className="text-xs leading-relaxed text-[#111010]/65">
+            From {approvedLogsCount} {approvedLogsCount === 1 ? 'activity' : 'activities'} your teacher approved.
           </p>
         </div>
 
-        {/* Unlocked Seed Funding */}
-        <div className="hai-card p-5 bg-white border border-[#111010]/15 space-y-2 hover:shadow-sm transition">
-          <div className="flex items-center justify-between text-xs text-[#005FA3] font-bold">
-            <span className="flex items-center gap-1.5">
-              <Coins className="w-4 h-4 text-amber-600" />
-              <span>Seed Grant Unlocked</span>
-            </span>
-            <span className="hai-cyan-pill text-[10px] font-bold">GIZ Pilot</span>
+        <div className="hai-card space-y-1.5 border border-[#111010]/15 bg-white p-5">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#005FA3]">
+            <Coins className="h-4 w-4 text-amber-600" />
+            <span>Grant for your school</span>
           </div>
-          <div className="text-3xl font-extrabold text-[#111010] font-mono">
+          <div className="whitespace-nowrap font-[var(--font-jakarta)] text-2xl font-extrabold tabular-nums text-[#111010] sm:text-3xl">
             {formatLkr(school.seed_funding_base_usd + schoolEntry.topoff_funding_amount_usd)}
           </div>
-          <p className="text-xs text-[#111010]/65">
-            Rs. 450k Base + {formatLkr(schoolEntry.topoff_funding_amount_usd)} Top-Off
+          <p className="text-xs leading-relaxed text-[#111010]/65">
+            {formatLkr(school.seed_funding_base_usd)} to start, plus{' '}
+            {formatLkr(schoolEntry.topoff_funding_amount_usd)} for reaching your level.
           </p>
         </div>
 
-        {/* Friendly Rivalry Position */}
-        <div className="hai-card p-5 bg-white border border-[#111010]/15 space-y-2 hover:shadow-sm transition">
-          <div className="flex items-center justify-between text-xs text-[#005FA3] font-bold">
-            <span className="flex items-center gap-1.5">
-              <Target className="w-4 h-4 text-purple-600" />
-              <span>Rivalry Position</span>
-            </span>
-            <span className="hai-cyan-pill text-[10px] font-bold">National</span>
+        <div className="hai-card space-y-1.5 border border-[#111010]/15 bg-white p-5">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#005FA3]">
+            <Target className="h-4 w-4 text-[#0F7B6C]" />
+            <span>Your place</span>
           </div>
-          <div className="text-lg font-bold text-[#111010] truncate mt-1">
-            {aboveEntry ? (
-              <>
-                {(aboveEntry.composite_leaderboard_score - currentScore).toFixed(1)}{' '}
-                <span className="text-xs font-normal text-[#111010]/70">
-                  pts behind #{aboveEntry.rank}
-                </span>
-              </>
-            ) : (
-              <span className="text-emerald-700 font-extrabold">Leading #1 in Sri Lanka!</span>
-            )}
+          <div className="whitespace-nowrap font-[var(--font-jakarta)] text-2xl font-extrabold tabular-nums text-[#111010] sm:text-3xl">
+            #{schoolEntry.rank}
+            <span className="ml-1 text-sm font-normal text-[#111010]/60">of 15</span>
           </div>
-          <p className="text-xs text-[#111010]/65 truncate">
+          <p className="text-xs leading-relaxed text-[#111010]/65">
             {aboveEntry
-              ? `Chasing ${aboveEntry.school.name}`
+              ? `${(aboveEntry.composite_leaderboard_score - currentScore).toFixed(1)} points behind ${aboveEntry.school.name}.`
               : belowEntry
-              ? `${(currentScore - belowEntry.composite_leaderboard_score).toFixed(1)} pts ahead of #${belowEntry.rank}`
-              : 'Pilot Leader'}
+                ? `You are ${(currentScore - belowEntry.composite_leaderboard_score).toFixed(1)} points ahead of ${belowEntry.school.name}.`
+                : 'Top of the pilot.'}
           </p>
         </div>
       </div>

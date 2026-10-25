@@ -96,6 +96,10 @@ export function StudentGamifiedDashboardView({
 
   const [leaderboardSearch, setLeaderboardSearch] = useState('');
   const [expandedLeaderboardSchoolId, setExpandedLeaderboardSchoolId] = useState<string | null>(null);
+  // The full table is reference material, not something a child needs on load.
+  const [showAllSchools, setShowAllSchools] = useState(false);
+  // The six-step logging form opens on request rather than owning the page.
+  const [showLogForm, setShowLogForm] = useState(false);
 
   const filteredLeaderboard = leaderboard.filter((entry) => {
     if (!leaderboardSearch) return true;
@@ -514,33 +518,6 @@ export function StudentGamifiedDashboardView({
   return (
     <div className="space-y-8">
       {/* ====================================================================
-       * Generic School Club Login Status Banner (Role-Locked)
-       * ==================================================================== */}
-      <div className="hai-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <SchoolLogo code={school.code} name={school.name} logoUrl={club.logo_url} size="md" />
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-bold text-[#005FA3] font-[var(--font-jakarta)]">
-                {school.name}
-              </span>
-              <span className="hai-cyan-pill font-mono text-[11px] font-bold">
-                {currentStudentUser.login_code}
-              </span>
-            </div>
-            <p className="text-xs text-[#111010]/70 mt-0.5">
-              The club&apos;s shared student account. Everything you log is checked by your teacher.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs font-semibold text-[#111010]/70">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
-          <span>Active Authenticated Session</span>
-        </div>
-      </div>
-
-      {/* ====================================================================
        * Gamified School Hero Banner with Animated Badges & Progress Mechanics
        * ==================================================================== */}
       <StudentGamificationHero
@@ -551,124 +528,41 @@ export function StudentGamifiedDashboardView({
         leaderboard={leaderboard}
         approvedLogsCount={approvedLogs.length}
         onLogActivityClick={() => {
-          formContainerRef.current?.scrollIntoView({ behavior: 'smooth' });
-          titleInputRef.current?.focus();
+          setShowLogForm(true);
+          window.setTimeout(() => {
+            formContainerRef.current?.scrollIntoView({ behavior: 'smooth' });
+            titleInputRef.current?.focus();
+          }, 60);
         }}
       />
 
 
       {/* ====================================================================
-       * Gamified School Quests & Badges (6 Interactive School Badges)
-       * ==================================================================== */}
-      <section className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h3 className="text-xl font-semibold text-[#111010] font-[var(--font-jakarta)] flex items-center gap-2">
-              <Award className="w-5 h-5 text-[#005FA3]" />
-              <span>6 Localized Enterprise Tracks &amp; Badges ({quests.filter((q) => q.unlocked).length}/6 Active)</span>
-            </h3>
-            <p className="text-xs text-[#111010]/70">
-              National GIZ pilot gamification tracks: earn green points to unlock Level 1–4 honors across Sri Lankan school campuses
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {quests.map((q) => (
-            <div
-              key={q.id}
-              className={`hai-card p-5 flex flex-col justify-between gap-3 ${
-                q.unlocked ? 'border-[#005FA3]/40' : 'opacity-90'
-              }`}
-            >
-              <div>
-                <div className="flex items-center gap-3">
-                  <div className="shrink-0 drop-shadow-xs">
-                    {q.renderIllustration(44)}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                          q.unlocked
-                            ? 'bg-[#005FA3] text-[#9CF2F2]'
-                            : 'bg-[#F0F3F5] text-[#111010]/65'
-                        }`}
-                      >
-                        {q.levelName || (q.unlocked ? '✓ Badge Unlocked' : 'In Progress')}
-                      </span>
-                      <span className="font-mono text-xs font-bold text-[#005FA3]">
-                        {q.xp}
-                      </span>
-                    </div>
-
-                    <h4 className="mt-1 text-base font-bold text-[#111010] font-[var(--font-jakarta)] truncate">
-                      {q.title}
-                    </h4>
-                  </div>
-                </div>
-                <p className="text-xs text-[#111010]/70 mt-2.5 leading-relaxed">
-                  {q.desc}
-                </p>
-              </div>
-
-              <div className="space-y-1.5 pt-2">
-                <div className="flex items-center justify-between text-[11px] font-semibold">
-                  <span className="text-[#14494F]">{q.progressText}</span>
-                  <span className="font-mono text-[#005FA3]">{q.pct}%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-[#F0F3F5] overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${
-                      q.unlocked ? 'bg-[#005FA3]' : 'bg-[#005FA3]/50'
-                    }`}
-                    style={{ width: `${q.pct}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ====================================================================
        * Full 15-School Island-Wide Leaderboard & Friendly Rivalry Standings
        * ==================================================================== */}
       <section className="hai-card overflow-hidden space-y-0">
-        <div className="bg-[#005FA3] text-white p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-[#9CF2F2] text-[#005FA3] text-xs font-bold uppercase tracking-wider">
-                🏆 Island-Wide Gamified Standings
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-white text-xs font-mono">
-                15 Sri Lankan Schools
-              </span>
-            </div>
-            <h3 className="text-xl sm:text-2xl font-bold font-[var(--font-jakarta)] tracking-tight">
-              National School Leaderboard &amp; Friendly Rivalry
+        <div className="flex flex-col gap-4 bg-[#005FA3] p-5 text-white sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div>
+            <h3 className="font-[var(--font-jakarta)] text-lg font-bold tracking-tight sm:text-xl">
+              All 15 schools
             </h3>
-            <p className="text-xs text-white/80">
-              Live composite rankings across all 15 schools based on verified waste diverted, student sales, and criteria scores.
+            <p className="mt-0.5 text-xs text-white/80">
+              Your place in the national pilot. You are #{schoolEntry.rank} with {currentScore} green points.
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
-            <div className="bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-center">
-              <div className="text-[10px] text-[#9CF2F2] uppercase font-bold">Our School Rank</div>
-              <div className="text-xl sm:text-2xl font-extrabold text-white font-mono">
-                #{schoolEntry.rank} <span className="text-xs text-[#9CF2F2]">of 15</span>
-              </div>
-            </div>
-            <div className="bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-center">
-              <div className="text-[10px] text-[#9CF2F2] uppercase font-bold">Our School Points</div>
-              <div className="text-xl sm:text-2xl font-extrabold text-white font-mono">
-                {currentScore} <span className="text-xs text-[#9CF2F2]">pts</span>
-              </div>
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowAllSchools((v) => !v)}
+            aria-expanded={showAllSchools}
+            className="shrink-0 self-start rounded-full bg-[#9CF2F2] px-4 py-2 text-xs font-extrabold text-[#00467A] transition hover:bg-white sm:self-auto"
+          >
+            {showAllSchools ? 'Hide the table' : 'See the table'}
+          </button>
         </div>
 
+        {showAllSchools && (
+          <>
         {/* Rivalry Banner */}
         <div className="bg-[#E6F1FA] border-b border-[#005FA3]/20 px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
@@ -826,14 +720,19 @@ export function StudentGamifiedDashboardView({
             </tbody>
           </table>
         </div>
+          </>
+        )}
       </section>
 
       {/* ====================================================================
        * School Activity Submission Bot & School Submissions Ledger
        * ==================================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className={`grid grid-cols-1 gap-6 ${showLogForm ? 'lg:grid-cols-12' : ''}`}>
         {/* Left: Native School Activity Upload Form (7 cols) */}
-        <div ref={formContainerRef} className="lg:col-span-7 hai-card flex flex-col overflow-hidden">
+        <div
+          ref={formContainerRef}
+          className={`${showLogForm ? 'lg:col-span-7' : 'hidden'} hai-card flex flex-col overflow-hidden`}
+        >
           {/* Card Header */}
           <div className="bg-[#005FA3] text-white px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
@@ -1234,7 +1133,7 @@ export function StudentGamifiedDashboardView({
         </div>
 
         {/* Right: School Submissions Status & 1x Resubmission Loop (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
+        <div className={`space-y-6 ${showLogForm ? 'lg:col-span-5' : ''}`}>
           {/* Rejected Logs Requiring 1x Resubmission */}
           {rejectedLogs.length > 0 && (
             <div className="hai-card p-5 border-rose-300 space-y-3">
