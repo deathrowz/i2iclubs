@@ -7,7 +7,7 @@
     "build": "node -r ./patch-fs.js ./node_modules/next/dist/bin/next build",
     "start": "node -r ./patch-fs.js ./node_modules/next/dist/bin/next start",
     "lint": "next lint",
-    "test": "npx tsx src/lib/__tests__/validation-engine.test.ts && npx tsx src/lib/__tests__/whatsapp-webhook.test.ts && npx tsx src/lib/__tests__/tiers.test.ts",
+    "test": "npx tsx src/lib/__tests__/validation-engine.test.ts && npx tsx src/lib/__tests__/whatsapp-webhook.test.ts && npx tsx src/lib/__tests__/tiers.test.ts && npx tsx src/lib/__tests__/leaderboard-spread.test.ts",
     "test:integration": "npx tsx src/lib/__tests__/supabase-log-lookup.test.ts",
     "test:whatsapp": "npx tsx src/lib/__tests__/whatsapp-webhook.test.ts"
   },

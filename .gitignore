@@ -27,3 +27,4 @@ yarn-error.log*
 
 # live pilot credentials — distributed privately, never committed
 /i2i_clubs_dummy_logins.csv
+/i2i-logins.txt

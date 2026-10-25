@@ -13,6 +13,18 @@ import {
 export const LKR_PER_UNIT = 300;
 
 /**
+ * How many leaderboard points a perfect (100) weighted criteria score is worth.
+ *
+ * The six-criteria baseline is a quality signal, not an achievement: every club
+ * starts with one. At 4.5 a strong baseline alone produced ~450 points, which
+ * put eight of the fifteen schools past the 500-point ladder before a single
+ * activity was verified — everyone read as "maxed out". At 2.0 a strong
+ * baseline is worth ~180 and the rest of the ladder has to be earned through
+ * verified micro and macro transactions.
+ */
+export const CRITERIA_POINT_WEIGHT = 2;
+
+/**
  * Formats an internal financial amount into Sri Lankan Rupees (Rs.)
  */
 export function formatLkr(amountUsd: number): string {
@@ -270,9 +282,9 @@ export function computeSchoolLeaderboard(params: {
     const logPenalties = fraudLogs.reduce((sum, l) => sum + l.penalty_points, 0);
     const penalty_points_deducted = Math.max(school.penalty_points_deducted, logPenalties);
 
-    // Composite Score = (Weighted 6-Criteria * 4.5) + ((Micro + Macro Points) * Fin/Env Normalization Index) - Fraud Penalties
+    // Composite Score = (Weighted 6-Criteria * weight) + ((Micro + Macro Points) * Fin/Env Normalization Index) - Fraud Penalties
     const rawComposite =
-      weighted_criteria_score * 4.5 +
+      weighted_criteria_score * CRITERIA_POINT_WEIGHT +
       (micro_points_total + macro_points_total) * fin_env_normalization_index -
       penalty_points_deducted;
 
