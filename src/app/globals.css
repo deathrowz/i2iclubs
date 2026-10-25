@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Two families carry the platform:
+     Plus Jakarta Sans — display, headings, codes, IDs and every figure
+     Inter             — body copy and UI labels
+   `font-mono` used to resolve to the OS monospace stack, which made codes and
+   counters a third, machine-looking voice. It now resolves to the display face
+   with tabular figures, so numbers still line up in tables. */
+@theme {
+  --font-mono: var(--font-plus-jakarta), var(--font-inter), ui-sans-serif, sans-serif;
+}
+
 :root {
   color-scheme: light;
 
@@ -37,6 +47,11 @@ body {
   color: var(--color-text);
   font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+.font-mono {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
 }
 
 .font-display {

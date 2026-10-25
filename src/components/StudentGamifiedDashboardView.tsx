@@ -46,6 +46,7 @@ import { calculateMicroTransactionPoints, formatLkr } from '@/lib/gamification/e
 import { postStudentImpactSubmissionClient } from '@/lib/client/platform-bridge';
 import { calculateDistanceMeters, extractAndValidateExif } from '@/lib/exif/parser';
 import { StudentGamificationHero } from '@/components/StudentGamificationHero';
+import { SchoolLogo } from '@/components/SchoolLogo';
 import {
   BadgeWasteToValue,
   BadgeSchoolEnterprise,
@@ -517,20 +518,18 @@ export function StudentGamifiedDashboardView({
        * ==================================================================== */}
       <div className="hai-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-[12px_12px_12px_2px] bg-[#005FA3] text-[#9CF2F2] flex items-center justify-center font-mono font-bold text-xs shrink-0">
-            {school.code}
-          </div>
+          <SchoolLogo code={school.code} name={school.name} logoUrl={club.logo_url} size="md" />
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#005FA3]">
-                Generic School Club Login • {school.name}
+              <span className="text-sm font-bold text-[#005FA3] font-[var(--font-jakarta)]">
+                {school.name}
               </span>
               <span className="hai-cyan-pill font-mono text-[11px] font-bold">
-                ID: {currentStudentUser.login_code}
+                {currentStudentUser.login_code}
               </span>
             </div>
             <p className="text-xs text-[#111010]/70 mt-0.5">
-              Logged in to the official student eco club enterprise portal for {school.name} ({school.city}).
+              The club&apos;s shared student account. Everything you log is checked by your teacher.
             </p>
           </div>
         </div>

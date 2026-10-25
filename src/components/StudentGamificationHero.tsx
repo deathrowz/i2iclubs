@@ -44,6 +44,7 @@ import {
   BadgePilotVanguard,
 } from '@/components/BadgeIllustrations';
 import { GameAnimatedXpMeter } from '@/components/GameAnimatedXpMeter';
+import { SchoolLogo } from '@/components/SchoolLogo';
 
 /**
  * Compact badge chip: encodes tier + XP in one legible line ("T2 · 128 XP")
@@ -479,8 +480,9 @@ export function StudentGamificationHero({
                 Level {tierConfig.level} • {tierConfig.tierName}
               </span>
 
-              <span className="px-3 py-1 rounded-full bg-black/20 text-[#9CF2F2] text-xs font-mono font-bold">
-                {school.code} • {school.city}
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-black/20 py-[3px] pl-[3px] pr-3 text-xs font-bold text-[#9CF2F2]">
+                <SchoolLogo code={school.code} name={school.name} logoUrl={club.logo_url} size="xs" />
+                {school.city}
               </span>
             </div>
 

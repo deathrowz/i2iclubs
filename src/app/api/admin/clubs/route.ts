@@ -44,6 +44,7 @@ export async function GET() {
         school_id: club.school_id,
         school_name: club.school_name,
         school_code: club.school_code,
+        logoUrl: club.logo_url ?? null,
         last_submission_at: club.last_submission_at,
         memberCount: members.length,
         members,

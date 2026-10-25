@@ -110,6 +110,8 @@ export interface Club {
   org_chart: OrgChartNode[];
   approved_milestones: ClubMilestone[];
   criteria_baseline: CriteriaScores;
+  /** Public URL of the school crest uploaded by the platform admin. */
+  logo_url?: string;
   active_members_count: number;
   last_submission_at: string;
 }

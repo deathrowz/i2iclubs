@@ -39,6 +39,11 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
+/** Public origin browsers use — never the internal Kong address. */
+export function getSupabasePublicUrl(): string {
+  return supabaseUrl;
+}
+
 export function isSupabaseConfigured(): boolean {
   return Boolean(
     supabaseUrl &&

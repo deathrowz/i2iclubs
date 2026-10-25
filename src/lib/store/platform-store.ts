@@ -1322,7 +1322,13 @@ export function createSchoolClub(params: {
 
 export function updateSchoolClub(
   clubId: string,
-  patch: { name?: string; tagline?: string; circularSector?: string; schoolId?: string }
+  patch: {
+    name?: string;
+    tagline?: string;
+    circularSector?: string;
+    schoolId?: string;
+    logoUrl?: string | null;
+  }
 ): Club {
   const store = getPlatformStore();
   const club = store.clubs.find((c) => c.id === clubId);
@@ -1333,6 +1339,7 @@ export function updateSchoolClub(
     if (name.length < 3) throw new Error('Club name needs at least 3 characters.');
     club.name = name;
   }
+  if (patch.logoUrl !== undefined) club.logo_url = patch.logoUrl ?? undefined;
   if (patch.tagline !== undefined) club.tagline = patch.tagline.trim();
   if (patch.circularSector !== undefined) club.circular_sector = patch.circularSector.trim();
 

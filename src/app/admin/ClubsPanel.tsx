@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, ChevronDown, ChevronRight, Loader2, Pencil, Plus, RefreshCw, Trash2, X } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronRight, ImageUp, Loader2, Pencil, Plus, RefreshCw, Trash2, X } from 'lucide-react';
+import { SchoolLogo } from '@/components/SchoolLogo';
 
 interface ClubMember {
   id: string;
@@ -22,6 +23,7 @@ interface ClubRow {
   school_id: string;
   school_name: string;
   school_code: string;
+  logoUrl: string | null;
   last_submission_at: string;
   memberCount: number;
   members: ClubMember[];
@@ -191,6 +193,40 @@ export function Clubs({ onError }: { onError: (e: string) => void }) {
     }
   };
 
+  const uploadCrest = async (club: ClubRow, file: File) => {
+    setBusy(true);
+    setNotice(null);
+    try {
+      const body = new FormData();
+      body.append('logo', file);
+      const res = await fetch(`/api/admin/clubs/${club.id}/logo`, { method: 'POST', body });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || `Upload failed (${res.status})`);
+      setNotice({ kind: 'ok', text: `Crest saved for ${club.school_name}.` });
+      load();
+    } catch (err) {
+      setNotice({ kind: 'err', text: err instanceof Error ? err.message : 'Could not save that image.' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeCrest = async (club: ClubRow) => {
+    setBusy(true);
+    setNotice(null);
+    try {
+      const res = await fetch(`/api/admin/clubs/${club.id}/logo`, { method: 'DELETE' });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.error || `Request failed (${res.status})`);
+      setNotice({ kind: 'ok', text: `Crest removed for ${club.school_name}.` });
+      load();
+    } catch (err) {
+      setNotice({ kind: 'err', text: err instanceof Error ? err.message : 'Could not remove that image.' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const removeMember = async (member: ClubMember) => {
     setBusy(true);
     setNotice(null);
@@ -318,9 +354,17 @@ export function Clubs({ onError }: { onError: (e: string) => void }) {
                       {open ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                     </button>
 
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[13px] font-semibold text-[#111010]">{club.name}</div>
-                      <div className="text-[11px] text-[#111010]/55 truncate">{club.tagline}</div>
+                    <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                      <SchoolLogo
+                        code={club.school_code}
+                        name={club.school_name}
+                        logoUrl={club.logoUrl}
+                        size="sm"
+                      />
+                      <div className="min-w-0">
+                        <div className="text-[13px] font-semibold text-[#111010]">{club.name}</div>
+                        <div className="text-[11px] text-[#111010]/55 truncate">{club.tagline}</div>
+                      </div>
                     </div>
 
                     <div className="hidden sm:block w-20 shrink-0">
@@ -364,7 +408,45 @@ export function Clubs({ onError }: { onError: (e: string) => void }) {
                   </div>
 
                   {editing === club.id && (
-                    <div className="bg-[#F7FAFC] px-5 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="bg-[#F7FAFC] px-5 pb-4 pt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="sm:col-span-2 flex flex-wrap items-center gap-3 rounded-xl border border-[#0B2C4D]/10 bg-white p-3">
+                        <SchoolLogo
+                          code={club.school_code}
+                          name={club.school_name}
+                          logoUrl={club.logoUrl}
+                          size="lg"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[12px] font-semibold text-[#111010]">School crest</div>
+                          <p className="text-[11px] text-[#111010]/55">
+                            Shown beside {club.school_name} across the platform. PNG, JPG, WebP or SVG up to 2 MB.
+                          </p>
+                        </div>
+                        <label className={`inline-flex items-center gap-1.5 rounded-full border border-[#005FA3]/25 px-3 py-1.5 text-[12px] font-semibold text-[#005FA3] ${busy ? 'opacity-50' : 'cursor-pointer hover:bg-[#E6F1FA]'}`}>
+                          <ImageUp className="w-3.5 h-3.5" />
+                          {club.logoUrl ? 'Replace' : 'Upload'}
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                            className="hidden"
+                            disabled={busy}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              e.target.value = '';
+                              if (file) uploadCrest(club, file);
+                            }}
+                          />
+                        </label>
+                        {club.logoUrl && (
+                          <button
+                            onClick={() => removeCrest(club)}
+                            disabled={busy}
+                            className="rounded-full border border-[#9B1C31]/25 px-3 py-1.5 text-[12px] font-semibold text-[#9B1C31] hover:bg-[#FBE9EC] disabled:opacity-50"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
                       <label className="block">
                         <span className="block text-[11px] font-semibold text-[#111010]/60 mb-1">Club name</span>
                         <input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className="w-full hai-input px-3 py-2 text-[13px]" />
