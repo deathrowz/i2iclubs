@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 
 // Ensure WebSocket is defined in Node.js runtime environments (Node 18/20 CI runners)
 // Prevents @supabase/realtime-js from throwing "Node.js detected but native WebSocket not found"
@@ -58,6 +59,17 @@ export function isSupabaseConfigured(): boolean {
 export function getSupabaseBrowserClient(): SupabaseClient | null {
   if (!isSupabaseConfigured()) return null;
   return createClient(supabaseUrl, supabaseAnonKey);
+}
+
+/**
+ * Browser client for sign-in. Stores the session in cookies, which the server
+ * reads through `createServerSupabase`. The plain client above keeps it in
+ * localStorage, where the server cannot see it, so a sign-in made with that
+ * client never authenticates a later API request.
+ */
+export function getSupabaseSessionClient(): SupabaseClient | null {
+  if (!isSupabaseConfigured()) return null;
+  return createBrowserClient(supabaseUrl, supabaseAnonKey) as unknown as SupabaseClient;
 }
 
 /**

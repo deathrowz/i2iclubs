@@ -9,7 +9,8 @@ import {
   X,
 } from 'lucide-react';
 import { UserProfile } from '@/types/domain';
-import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { getSupabaseSessionClient } from '@/lib/supabase/client';
+import { resolveLoginIdentifier } from '@/lib/client/auth-bridge';
 
 interface AuthLoginPromptModalProps {
   isOpen: boolean;
@@ -51,23 +52,15 @@ export function AuthLoginPromptModal({
     setErrorMessage(null);
 
     try {
-      const normalizedPhone = clean.replace(/\D/g, '');
-
-      let match = users.find(
-        (u) =>
-          u.email.toLowerCase() === clean ||
-          u.login_code?.toLowerCase() === clean ||
-          u.id.toLowerCase() === clean ||
-          (u.school_code && u.school_code.toLowerCase() === clean) ||
-          (normalizedPhone && (u.phone_number || '').replace(/\D/g, '') === normalizedPhone) ||
-          (clean.endsWith('-club') && u.login_code?.toLowerCase() === `${clean.replace('-club', '')}-student`)
-      );
+      // Resolve the typed identifier on the server; the browser does not hold the user list.
+      let match: UserProfile | undefined =
+        (await resolveLoginIdentifier(clean)) ?? undefined;
 
       // Attempt Supabase Auth verification
       const targetEmail = match ? match.email : (clean.includes('@') ? clean : null);
       let supabaseAuthenticated = false;
 
-      const supabase = getSupabaseBrowserClient();
+      const supabase = getSupabaseSessionClient();
       if (supabase && targetEmail) {
         try {
           const { data: authData, error: authError } = await supabase.auth.signInWithPassword({

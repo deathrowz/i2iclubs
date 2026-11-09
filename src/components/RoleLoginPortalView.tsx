@@ -15,7 +15,8 @@ import {
   LeaderboardSchoolScore,
   UserProfile,
 } from '@/types/domain';
-import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { getSupabaseSessionClient } from '@/lib/supabase/client';
+import { resolveLoginIdentifier } from '@/lib/client/auth-bridge';
 
 interface RoleLoginPortalViewProps {
   activeUser: UserProfile;
@@ -65,33 +66,16 @@ export function RoleLoginPortalView({
     setErrorMessage(null);
 
     try {
-      const normalizedPhone = cleanId.replace(/\D/g, '');
-
-      // 1. Resolve matching persona profile
-      let activePersona = users.find((u) => {
-        const email = u.email.toLowerCase();
-        const code = u.login_code?.toLowerCase() || '';
-        const sc = u.school_code?.toLowerCase() || '';
-        const phone = (u.phone_number || '').replace(/\D/g, '');
-
-        return (
-          u.id === cleanId ||
-          (u.auth_user_id && u.auth_user_id === cleanId) ||
-          email === cleanId ||
-          code === cleanId ||
-          sc === cleanId ||
-          (normalizedPhone && phone === normalizedPhone) ||
-          (cleanId.endsWith('-club') && code === `${cleanId.replace('-club', '')}-student`) ||
-          (cleanId.endsWith('-student') && code === cleanId) ||
-          (cleanId.endsWith('-teacher') && code === cleanId)
-        );
-      });
+      // 1. Resolve the typed identifier on the server (login codes and phone
+      //    numbers are not shipped to the browser).
+      let activePersona: UserProfile | undefined =
+        (await resolveLoginIdentifier(cleanId)) ?? undefined;
 
       // 2. Attempt Supabase Auth login if email is available
       const targetEmail = activePersona ? activePersona.email : (cleanId.includes('@') ? cleanId : null);
       let supabaseAuthenticated = false;
 
-      const supabase = getSupabaseBrowserClient();
+      const supabase = getSupabaseSessionClient();
       if (supabase && targetEmail) {
         try {
           const { data: authData, error: authError } = await supabase.auth.signInWithPassword({

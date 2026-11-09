@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ensureStoreHydrated } from '@/lib/store/club-repository';
 import { getSignedInProfile } from '@/lib/auth/guards';
 import { bindActor } from '@/lib/auth/scope';
+import { toPublicProfile } from '@/lib/auth/identity';
 import {
   getFullPlatformSnapshot,
   performExpertAdjudication,
@@ -15,7 +16,14 @@ export async function GET() {
   // Reflect clubs persisted in Postgres rather than only the built-in seeds.
   await ensureStoreHydrated();
   const snapshot = getFullPlatformSnapshot();
-  return NextResponse.json(snapshot);
+
+  // Anonymous callers get the user list without contact details, login codes
+  // or identity-provider ids. Signed-in callers get the full list, which the
+  // admin console needs for user management.
+  const profile = await getSignedInProfile();
+  const users = profile ? snapshot.users : snapshot.users.map(toPublicProfile);
+
+  return NextResponse.json({ ...snapshot, users }, { headers: { 'Cache-Control': 'no-store' } });
 }
 
 export async function POST(req: NextRequest) {
