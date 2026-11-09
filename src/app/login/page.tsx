@@ -6,6 +6,7 @@ import { Recycle, AlertCircle, CheckCircle2, KeyRound, LogIn } from 'lucide-reac
 import { createBrowserClient } from '@supabase/ssr';
 import { RoleLoginPortalView } from '@/components/RoleLoginPortalView';
 import { fetchPlatformSnapshotClient } from '@/lib/client/platform-bridge';
+import { fetchSessionProfile } from '@/lib/client/auth-bridge';
 import { UserProfile } from '@/types/domain';
 
 function LoginContent() {
@@ -77,10 +78,9 @@ function LoginContent() {
       return;
     }
 
-    const signedInEmail = data.user?.email?.toLowerCase() ?? '';
-    const profile: UserProfile | undefined = snapshot?.users?.find(
-      (u: UserProfile) => u.email.toLowerCase() === signedInEmail
-    );
+    // Resolve the profile from the server session. The browser no longer holds
+    // the full user list, so matching by email there would find nothing.
+    const profile: UserProfile | undefined = (await fetchSessionProfile()) ?? undefined;
 
     // Mirror the session for the client-side platform views.
     if (typeof window !== 'undefined' && profile) {

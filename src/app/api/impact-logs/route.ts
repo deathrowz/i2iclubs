@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getSignedInProfile } from '@/lib/auth/guards';
+import { bindActor, scopeImpactLogs } from '@/lib/auth/scope';
 import {
   createStudentImpactSubmission,
   getFullPlatformSnapshot,
@@ -7,36 +9,34 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
-  const store = getPlatformStore();
-  const { searchParams } = new URL(req.url);
-  const role = searchParams.get('role');
-  const schoolId = searchParams.get('schoolId');
-  const actorId = searchParams.get('actorId');
-
-  let logs = store.impactLogs;
-
-  // Enforce strict anti-tamper RBAC Scoping on GET
-  const actor = actorId ? store.users.find((u) => u.id === actorId) : null;
-  const effectiveRole = actor ? actor.role : role;
-  const effectiveSchoolId = actor && (actor.role === 'teacher' || actor.role === 'student') ? actor.school_id : schoolId;
-
-  if ((effectiveRole === 'teacher' || effectiveRole === 'student') && effectiveSchoolId) {
-    logs = logs.filter((l) => l.school_id === effectiveSchoolId);
-  } else if (effectiveRole === 'mentor' && actorId) {
-    const mentor = store.users.find((u) => u.id === actorId);
-    const assigned = mentor?.assigned_club_ids || [];
-    logs = logs.filter((l) => assigned.includes(l.club_id));
+/**
+ * Returns the impact logs the caller may see. The role, school and club scope
+ * come from the verified session, not from query parameters, which the caller
+ * could set to any value.
+ */
+export async function GET() {
+  const profile = await getSignedInProfile();
+  if (!profile) {
+    return NextResponse.json({ ok: false, error: 'Sign in required.' }, { status: 401 });
   }
 
+  const logs = scopeImpactLogs(profile, getPlatformStore().impactLogs);
   return NextResponse.json({ ok: true, impactLogs: logs });
 }
 
 export async function POST(req: NextRequest) {
+  // Submissions are attributed to the verified session. The previous fallback
+  // to a seeded student id meant an unauthenticated POST was filed under a real
+  // account.
+  const profile = await getSignedInProfile();
+  if (!profile) {
+    return NextResponse.json({ ok: false, error: 'Sign in required.' }, { status: 401 });
+  }
+
   try {
-    const body = await req.json();
+    const body = bindActor(await req.json(), profile);
     const created = await createStudentImpactSubmission({
-      actorId: body.actorId || 'usr-student-01',
+      actorId: body.actorId,
       clubId: body.clubId || 'club-01',
       fileName: body.fileName || 'WHATSAPP_DOC.JPG',
       mimeType: body.mimeType || 'image/jpeg',
