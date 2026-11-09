@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ensureStoreHydrated } from '@/lib/store/club-repository';
+import { getSignedInProfile } from '@/lib/auth/guards';
+import { bindActor } from '@/lib/auth/scope';
 import {
   getFullPlatformSnapshot,
   performExpertAdjudication,
@@ -17,8 +19,16 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  // Every mutation is attributed to the verified Supabase session. The
+  // `actorId` in the body is ignored: it was previously trusted, which let any
+  // caller act as any user whose id the public snapshot disclosed.
+  const profile = await getSignedInProfile();
+  if (!profile) {
+    return NextResponse.json({ ok: false, error: 'Sign in required.' }, { status: 401 });
+  }
+
   try {
-    const body = await req.json();
+    const body = bindActor(await req.json(), profile);
     const { actionType } = body;
 
     if (actionType === 'TEACHER_REVIEW') {
