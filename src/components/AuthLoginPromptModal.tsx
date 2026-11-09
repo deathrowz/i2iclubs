@@ -126,12 +126,7 @@ export function AuthLoginPromptModal({
         }
       }
 
-      const isValidPassword =
-        supabaseAuthenticated ||
-        passwordInput === '#password123' ||
-        passwordInput === 'I2IClubs2026!Secure' ||
-        passwordInput === 'Haritha2026!Secure' ||
-        passwordInput === 'Pilot2026!';
+      const isValidPassword = supabaseAuthenticated;
 
       if (!match || !isValidPassword) {
         setErrorMessage('Invalid credentials. Please verify your Email or Login ID and password.');

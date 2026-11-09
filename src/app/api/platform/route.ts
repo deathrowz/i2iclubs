@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ensureStoreHydrated } from '@/lib/store/club-repository';
 import { getSignedInProfile } from '@/lib/auth/guards';
 import { bindActor } from '@/lib/auth/scope';
-import { toPublicProfile } from '@/lib/auth/identity';
+import { toPublicSnapshot } from '@/lib/auth/identity';
 import {
   getFullPlatformSnapshot,
   performExpertAdjudication,
@@ -17,13 +17,13 @@ export async function GET() {
   await ensureStoreHydrated();
   const snapshot = getFullPlatformSnapshot();
 
-  // Anonymous callers get the user list without contact details, login codes
-  // or identity-provider ids. Signed-in callers get the full list, which the
-  // admin console needs for user management.
+  // Anonymous callers get the public view: no contact details, student
+  // identities, proof-file locations or message history. Signed-in callers get
+  // the full snapshot, which the admin console needs.
   const profile = await getSignedInProfile();
-  const users = profile ? snapshot.users : snapshot.users.map(toPublicProfile);
+  const body = profile ? snapshot : toPublicSnapshot(snapshot);
 
-  return NextResponse.json({ ...snapshot, users }, { headers: { 'Cache-Control': 'no-store' } });
+  return NextResponse.json(body, { headers: { 'Cache-Control': 'no-store' } });
 }
 
 export async function POST(req: NextRequest) {

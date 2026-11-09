@@ -143,12 +143,7 @@ export function RoleLoginPortalView({
       }
 
       // 3. Fallback verification: Check known secure pilot passwords if Supabase Auth is offline
-      const isValidPassword =
-        supabaseAuthenticated ||
-        passwordInput === '#password123' ||
-        passwordInput === 'I2IClubs2026!Secure' ||
-        passwordInput === 'Haritha2026!Secure' ||
-        passwordInput === 'Pilot2026!';
+      const isValidPassword = supabaseAuthenticated;
 
       if (!activePersona || !isValidPassword) {
         setIsSubmitting(false);
